@@ -73,13 +73,33 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await expect(knowledgeCombobox).toHaveValue("图论 / 最短路 / Dijkstra");
   await page.getByRole("button", { name: "应用筛选" }).click();
   await expect(page).toHaveURL(/knowledge=graph.shortest-path.dijkstra/);
-  await expect(page.locator('a:visible[href="/problems/e2e-dijkstra"]')).toBeVisible();
+  const dijkstraLink = page.getByRole("link", {
+    name: "Dijkstra E2E Fixture",
+  });
+  await expect(dijkstraLink).toBeVisible();
+  const problemItem = dijkstraLink.locator(
+    "xpath=ancestor::*[self::tr or self::li][1]",
+  );
+  await expect(problemItem.getByTitle("图论 / 最短路 / Dijkstra")).toHaveText(
+    "Dijkstra",
+  );
+  await expect(
+    problemItem.getByText("图论 / 最短路 / Dijkstra", { exact: true }),
+  ).toHaveCount(0);
   await expect(page.getByText("Boredom E2E Fixture")).toHaveCount(0);
 
   await page.goto("/problems/e2e-dijkstra");
   await expect(page.getByRole("heading", { level: 1, name: "Dijkstra E2E Fixture" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "题意抽象" })).toBeVisible();
-  await expect(page.getByText("图论 / 最短路 / Dijkstra")).toBeVisible();
+  const knowledgeSection = page.locator(
+    'section[aria-labelledby="knowledge-title"]',
+  );
+  await expect(
+    knowledgeSection.getByTitle("图论 / 最短路 / Dijkstra"),
+  ).toHaveText("Dijkstra");
+  await expect(
+    knowledgeSection.getByText("图论 / 最短路 / Dijkstra", { exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("link", { name: "编辑题目" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "编辑题目" })).toBeVisible();
   await expect(page.getByLabel("稳定 ID *")).toHaveValue("e2e-dijkstra");

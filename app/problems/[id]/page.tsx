@@ -6,7 +6,11 @@ import { MarkdownContent } from "@/components/problems/markdown-content";
 import { ReviewDate } from "@/components/problems/review-date";
 import { StatusBadge } from "@/components/problems/status-badge";
 import { toLocalDateOnly } from "@/lib/date/local-date";
-import { getKnowledgeNames } from "@/lib/knowledge/presentation";
+import {
+  getKnowledgeBreadcrumb,
+  getKnowledgeLabel,
+} from "@/lib/knowledge/presentation";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import { ProblemDataError } from "@/lib/problems/errors";
 import { createProblemRepository } from "@/lib/problems/repository";
 import type { ProblemFile } from "@/lib/problems/types";
@@ -71,6 +75,26 @@ function DetailTags({ values }: { values: string[] }) {
           key={value}
         >
           {value}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function KnowledgeDetailTags({ ids }: { ids: readonly KnowledgeId[] }) {
+  if (ids.length === 0) {
+    return <span className="text-sm text-slate-400">未填写</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {ids.map((id) => (
+        <span
+          className="rounded-md bg-slate-100 px-2.5 py-1 text-sm text-slate-700 ring-1 ring-inset ring-slate-200"
+          key={id}
+          title={getKnowledgeBreadcrumb(id)}
+        >
+          {getKnowledgeLabel(id)}
         </span>
       ))}
     </div>
@@ -240,7 +264,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
               Knowledge
             </h2>
             <div className="mt-3">
-              <DetailTags values={getKnowledgeNames(frontmatter.knowledge)} />
+              <KnowledgeDetailTags ids={frontmatter.knowledge} />
             </div>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Tags

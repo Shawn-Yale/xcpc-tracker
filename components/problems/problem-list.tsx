@@ -1,7 +1,11 @@
 import Link from "next/link";
 
 import type { DateOnly } from "@/lib/date/date-only";
-import { getKnowledgeNames } from "@/lib/knowledge/presentation";
+import {
+  getKnowledgeBreadcrumb,
+  getKnowledgeLabel,
+} from "@/lib/knowledge/presentation";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import type { ProblemFile } from "@/lib/problems/types";
 
 import { ReviewDate } from "./review-date";
@@ -41,6 +45,26 @@ function TagList({ values, muted = false }: { values: string[]; muted?: boolean 
           key={value}
         >
           {value}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function KnowledgeTagList({ ids }: { ids: readonly KnowledgeId[] }) {
+  if (ids.length === 0) {
+    return <span className="text-slate-400">—</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {ids.map((id) => (
+        <span
+          className="rounded bg-sky-50 px-1.5 py-0.5 text-xs font-medium text-sky-800"
+          key={id}
+          title={getKnowledgeBreadcrumb(id)}
+        >
+          {getKnowledgeLabel(id)}
         </span>
       ))}
     </div>
@@ -109,7 +133,7 @@ export function ProblemList({
                     <StatusBadge status={problem.frontmatter.status} />
                   </td>
                   <td className="max-w-52 px-3 py-4">
-                    <TagList values={getKnowledgeNames(problem.frontmatter.knowledge)} />
+                    <KnowledgeTagList ids={problem.frontmatter.knowledge} />
                   </td>
                   <td className="max-w-56 px-3 py-4">
                     <TagList muted values={problem.frontmatter.tags} />
@@ -170,7 +194,7 @@ export function ProblemList({
             </dl>
 
             <div className="mt-4 space-y-2">
-              <TagList values={getKnowledgeNames(problem.frontmatter.knowledge)} />
+              <KnowledgeTagList ids={problem.frontmatter.knowledge} />
               <TagList muted values={problem.frontmatter.tags} />
             </div>
           </li>
