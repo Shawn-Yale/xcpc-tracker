@@ -187,6 +187,33 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
             <div className="mt-4">
               <MarkdownContent content={content} />
             </div>
+            {frontmatter.solutionLanguage != null &&
+            frontmatter.solutionCode != null ? (
+              <section
+                aria-labelledby="ac-solution-title"
+                className="mt-8 min-w-0 max-w-full border-t border-slate-200 pt-6"
+              >
+                <h3
+                  className="text-lg font-semibold text-slate-950"
+                  id="ac-solution-title"
+                >
+                  AC 代码
+                </h3>
+                <details className="mt-4 min-w-0 max-w-full">
+                  <summary className="cursor-pointer text-sm font-semibold text-sky-800 hover:text-sky-700 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                    查看 AC 代码
+                  </summary>
+                  <div className="mt-4 min-w-0 max-w-full">
+                    <span className="inline-flex rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
+                      {frontmatter.solutionLanguage}
+                    </span>
+                    <pre className="mt-3 max-w-full overflow-x-auto rounded-md bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-100 whitespace-pre">
+                      <code>{frontmatter.solutionCode}</code>
+                    </pre>
+                  </div>
+                </details>
+              </section>
+            ) : null}
           </section>
 
           <section aria-labelledby="review-history-title" className="border-t border-slate-200 pt-8">
