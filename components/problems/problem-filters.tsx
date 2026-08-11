@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { platformValues } from "@/config/platforms";
 import { statusValues } from "@/config/status";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import type { ProblemQuery } from "@/lib/problems/query";
-import { getKnowledgeBreadcrumb } from "@/lib/knowledge/presentation";
+
+import { KnowledgeFilterCombobox } from "./knowledge-filter-combobox";
 
 const fieldClassName =
   "mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15";
 
 export function ProblemFilters({ query }: { query: ProblemQuery }) {
-  const [knowledge, setKnowledge] = useState(
+  const [knowledge, setKnowledge] = useState<KnowledgeId | "">(
     query.knowledge.state === "valid" ? query.knowledge.id : "",
   );
   return (
@@ -50,24 +51,12 @@ export function ProblemFilters({ query }: { query: ProblemQuery }) {
           </select>
         </label>
 
-        <label>
+        <div>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             知识点
           </span>
-          <select
-            className={fieldClassName}
-            name={knowledge === "" ? undefined : "knowledge"}
-            onChange={(event) => setKnowledge(event.target.value)}
-            value={knowledge}
-          >
-            <option value="">全部知识点</option>
-            {knowledgeCatalog.entries.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {getKnowledgeBreadcrumb(entry.id)}
-              </option>
-            ))}
-          </select>
-        </label>
+          <KnowledgeFilterCombobox onChange={setKnowledge} value={knowledge} />
+        </div>
 
         <label>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">

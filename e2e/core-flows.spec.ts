@@ -48,9 +48,31 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   ).toHaveText("Boredom E2E Fixture");
 
   await page.goto("/problems");
-  await page.getByLabel("知识点").selectOption("graph");
+  const knowledgeCombobox = page.getByRole("combobox", { name: "知识点" });
+  await knowledgeCombobox.click();
+  await expect(page.getByRole("listbox").getByRole("option")).toHaveCount(11);
+  await knowledgeCombobox.fill("没有这个知识点");
+  await expect(page.getByText("没有匹配的知识点")).toBeVisible();
+  await knowledgeCombobox.press("Escape");
+  await expect(knowledgeCombobox).toHaveAttribute("aria-expanded", "false");
+
+  await knowledgeCombobox.click();
+  await knowledgeCombobox.fill("区间查询结构");
+  await page.getByRole("option", { name: "数据结构 / 区间查询结构", exact: true }).click();
+  await expect(page.locator('input[name="knowledge"]')).toHaveValue("data-structure.range-query");
+  await expect(page).toHaveURL(/\/problems$/);
   await page.getByRole("button", { name: "应用筛选" }).click();
-  await expect(page).toHaveURL(/knowledge=graph/);
+  await expect(page).toHaveURL(/knowledge=data-structure.range-query/);
+  await page.getByRole("link", { name: "重置" }).click();
+  await expect(page).toHaveURL(/\/problems$/);
+
+  await knowledgeCombobox.click();
+  await knowledgeCombobox.fill("graph.shortest-path.dijkstra");
+  await knowledgeCombobox.press("ArrowDown");
+  await knowledgeCombobox.press("Enter");
+  await expect(knowledgeCombobox).toHaveValue("图论 / 最短路 / Dijkstra");
+  await page.getByRole("button", { name: "应用筛选" }).click();
+  await expect(page).toHaveURL(/knowledge=graph.shortest-path.dijkstra/);
   await expect(page.locator('a:visible[href="/problems/e2e-dijkstra"]')).toBeVisible();
   await expect(page.getByText("Boredom E2E Fixture")).toHaveCount(0);
 
