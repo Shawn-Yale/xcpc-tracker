@@ -7,7 +7,7 @@ import {
   updateProblemAction,
   type ProblemFormActionState,
 } from "@/app/problems/actions";
-import { categoryValues } from "@/config/categories";
+import { KnowledgeSelector } from "@/components/knowledge/knowledge-selector";
 import { platformValues, type Platform } from "@/config/platforms";
 import { statusMetadata, statusValues } from "@/config/status";
 import {
@@ -237,19 +237,12 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
       <section aria-labelledby="knowledge-heading">
         <div className="border-b border-slate-200 pb-3">
           <h2 className="text-lg font-semibold text-slate-950" id="knowledge-heading">知识分类</h2>
-          <p className="mt-1 text-sm text-slate-600">可选择多个一级分类；标签用逗号或换行分隔。</p>
+          <p className="mt-1 text-sm text-slate-600">按层级选择解题所需的最小充分知识点；标签用逗号或换行分隔。</p>
         </div>
         <fieldset className="mt-5">
-          <legend className="text-sm font-semibold text-slate-800">Categories</legend>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {categoryValues.map((category) => (
-              <label className="flex items-center gap-2 border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700" key={category}>
-                <input className="size-4 accent-sky-700" defaultChecked={initial.categories.includes(category)} name="categories" type="checkbox" value={category} />
-                {category}
-              </label>
-            ))}
-          </div>
-          <FieldError errors={fieldErrors.categories} />
+          <legend className="text-sm font-semibold text-slate-800">Knowledge</legend>
+          <div className="mt-3"><KnowledgeSelector initial={initial.knowledge} /></div>
+          <FieldError errors={fieldErrors.knowledge} />
         </fieldset>
         <label className="mt-5 block text-sm font-semibold text-slate-800">
           Tags

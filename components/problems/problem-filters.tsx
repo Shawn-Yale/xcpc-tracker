@@ -1,14 +1,21 @@
-import Link from "next/link";
+"use client";
 
-import { categoryValues } from "@/config/categories";
+import Link from "next/link";
+import { useState } from "react";
+
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { platformValues } from "@/config/platforms";
 import { statusValues } from "@/config/status";
 import type { ProblemQuery } from "@/lib/problems/query";
+import { getKnowledgeBreadcrumb } from "@/lib/knowledge/presentation";
 
 const fieldClassName =
   "mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15";
 
 export function ProblemFilters({ query }: { query: ProblemQuery }) {
+  const [knowledge, setKnowledge] = useState(
+    query.knowledge.state === "valid" ? query.knowledge.id : "",
+  );
   return (
     <form
       action="/problems"
@@ -45,17 +52,18 @@ export function ProblemFilters({ query }: { query: ProblemQuery }) {
 
         <label>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-            分类
+            知识点
           </span>
           <select
             className={fieldClassName}
-            defaultValue={query.category}
-            name="category"
+            name={knowledge === "" ? undefined : "knowledge"}
+            onChange={(event) => setKnowledge(event.target.value)}
+            value={knowledge}
           >
-            <option value="all">全部分类</option>
-            {categoryValues.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            <option value="">全部知识点</option>
+            {knowledgeCatalog.entries.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {getKnowledgeBreadcrumb(entry.id)}
               </option>
             ))}
           </select>

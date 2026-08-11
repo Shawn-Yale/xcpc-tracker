@@ -1,7 +1,9 @@
-import { categoryValues, type Category } from "@/config/categories";
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { platformValues, type Platform } from "@/config/platforms";
 import { statusValues, type Status } from "@/config/status";
 import { compareDateOnly, type DateOnly } from "@/lib/date/date-only";
+import { getKnowledgeEntry } from "@/lib/knowledge/catalog";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import { isOverdue, isReviewDue } from "@/lib/review/rules";
 
 import type { ProblemFile } from "./types";
@@ -24,10 +26,23 @@ export type ReviewFilter = (typeof reviewFilterValues)[number];
 export type ProblemSort = (typeof problemSortValues)[number];
 export type SortDirection = (typeof sortDirectionValues)[number];
 
+export type KnowledgeFilter =
+  | { readonly state: "none" }
+  | { readonly state: "valid"; readonly id: KnowledgeId }
+  | {
+      readonly state: "invalid";
+      readonly rawValue: string;
+      readonly reason:
+        | "malformed-id"
+        | "unknown-id"
+        | "multiple-values"
+        | "legacy-category";
+    };
+
 export type ProblemQuery = {
   search: string;
   status: Status | "all";
-  category: Category | "all";
+  knowledge: KnowledgeFilter;
   platform: Platform | "all";
   review: ReviewFilter;
   sort: ProblemSort;
@@ -50,7 +65,6 @@ function includesValue<const T extends readonly string[]>(
 
 export function parseProblemQuery(parameters: ProblemQueryParameters): ProblemQuery {
   const status = firstValue(parameters.status);
-  const category = firstValue(parameters.category);
   const platform = firstValue(parameters.platform);
   const review = firstValue(parameters.review);
   const sort = firstValue(parameters.sort);
@@ -59,12 +73,42 @@ export function parseProblemQuery(parameters: ProblemQueryParameters): ProblemQu
   return {
     search: (firstValue(parameters.search) ?? "").trim(),
     status: includesValue(statusValues, status) ? status : "all",
-    category: includesValue(categoryValues, category) ? category : "all",
+    knowledge: parseKnowledgeFilter(parameters),
     platform: includesValue(platformValues, platform) ? platform : "all",
     review: includesValue(reviewFilterValues, review) ? review : "all",
     sort: includesValue(problemSortValues, sort) ? sort : "solvedAt",
     direction: includesValue(sortDirectionValues, direction) ? direction : "desc",
   };
+}
+
+function parseKnowledgeFilter(parameters: ProblemQueryParameters): KnowledgeFilter {
+  const knowledge = parameters.knowledge;
+  const legacyCategory = parameters.category;
+
+  if (legacyCategory !== undefined) {
+    return {
+      state: "invalid",
+      rawValue: Array.isArray(legacyCategory) ? legacyCategory.join(", ") : legacyCategory,
+      reason: "legacy-category",
+    };
+  }
+  if (knowledge === undefined) {
+    return { state: "none" };
+  }
+  if (Array.isArray(knowledge)) {
+    return {
+      state: "invalid",
+      rawValue: knowledge.join(", "),
+      reason: "multiple-values",
+    };
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*){0,2}$/.test(knowledge)) {
+    return { state: "invalid", rawValue: knowledge, reason: "malformed-id" };
+  }
+  const entry = getKnowledgeEntry(knowledgeCatalog, knowledge);
+  return entry
+    ? { state: "valid", id: entry.id }
+    : { state: "invalid", rawValue: knowledge, reason: "unknown-id" };
 }
 
 function matchesSearch(problem: ProblemFile, search: string): boolean {
@@ -154,11 +198,19 @@ export function queryProblems(
       (problem) =>
         query.status === "all" || problem.frontmatter.status === query.status,
     )
-    .filter(
-      (problem) =>
-        query.category === "all" ||
-        problem.frontmatter.categories.includes(query.category),
-    )
+    .filter((problem) => {
+      if (query.knowledge.state === "none") {
+        return true;
+      }
+      if (query.knowledge.state === "invalid") {
+        return false;
+      }
+      const filterId = query.knowledge.id;
+      return problem.frontmatter.knowledge.some((id) => {
+        const entry = getKnowledgeEntry(knowledgeCatalog, id);
+        return id === filterId || entry?.ancestorIds.includes(filterId);
+      });
+    })
     .filter(
       (problem) =>
         query.platform === "all" || problem.frontmatter.platform === query.platform,

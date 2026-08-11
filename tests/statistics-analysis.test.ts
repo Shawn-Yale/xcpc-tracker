@@ -28,6 +28,7 @@ function makeProblem(
       platform: "Codeforces",
       solvedAt: "2026-08-10",
       status: "C",
+      knowledge: [],
       ...overrides,
     }),
   };
@@ -56,18 +57,19 @@ describe("statistics analysis", () => {
     });
   });
 
-  it("counts multi-category problems in each category but once overall", () => {
+  it("counts cross-domain knowledge directly and once overall", () => {
     const problems = [
-      makeProblem("multi-category", {
+      makeProblem("multi-knowledge", {
         status: "A",
-        categories: ["图论", "数据结构"],
+        knowledge: ["graph.shortest-path.dijkstra", "data-structure.heap"],
       }),
     ];
     const summary = getStatisticsSummary(problems, today);
 
     expect(summary.overall.total).toBe(1);
-    expect(summary.categories.find((item) => item.category === "图论")?.total).toBe(1);
-    expect(summary.categories.find((item) => item.category === "数据结构")?.total).toBe(1);
+    expect(summary.knowledge.find((item) => item.id === "graph.shortest-path.dijkstra")?.direct.total).toBe(1);
+    expect(summary.knowledge.find((item) => item.id === "data-structure.heap")?.direct.total).toBe(1);
+    expect(summary.knowledge.find((item) => item.id === "graph")?.rollup.total).toBe(1);
   });
 
   it("bins only non-null ratings and aggregates a daily Rating trend", () => {
@@ -139,30 +141,41 @@ describe("statistics analysis", () => {
     ]);
   });
 
-  it("aggregates current D knowledge gaps by every category and tag", () => {
+  it("aggregates D knowledge gaps from direct selections only", () => {
     const gaps = getDKnowledgeGaps([
       makeProblem("d-one", {
         status: "D",
-        categories: ["图论", "数据结构"],
+        knowledge: ["graph.shortest-path.dijkstra", "data-structure.heap"],
         tags: ["最短路", "优先队列"],
       }),
       makeProblem("d-two", {
         status: "D",
-        categories: ["图论"],
+        knowledge: ["graph.shortest-path.dijkstra"],
         tags: ["最短路"],
       }),
       makeProblem("d-unclassified", { status: "D" }),
       makeProblem("c-ignore", {
         status: "C",
-        categories: ["图论"],
+        knowledge: ["graph.shortest-path.dijkstra"],
         tags: ["最短路"],
       }),
     ]);
 
     expect(gaps.total).toBe(3);
     expect(gaps.unclassified).toBe(1);
-    expect(gaps.categories[0]).toEqual({ category: "图论", count: 2 });
+    expect(gaps.knowledge[0]).toEqual({ id: "graph.shortest-path.dijkstra", count: 2 });
+    expect(gaps.knowledge.some((item) => item.id === "graph" || item.id === "graph.shortest-path")).toBe(false);
     expect(gaps.tags[0]).toEqual({ tag: "最短路", count: 2 });
+  });
+
+  it("deduplicates sibling selections in the same ancestor rollup", () => {
+    const summary = getStatisticsSummary([
+      makeProblem("siblings", {
+        knowledge: ["graph.shortest-path.dijkstra", "graph.shortest-path.bellman-ford"],
+      }),
+    ], today);
+    expect(summary.knowledge.find((item) => item.id === "graph.shortest-path")?.rollup.total).toBe(1);
+    expect(summary.knowledge.find((item) => item.id === "graph")?.rollup.total).toBe(1);
   });
 
   it("builds a solved-plus-Review heatmap without future activity", () => {

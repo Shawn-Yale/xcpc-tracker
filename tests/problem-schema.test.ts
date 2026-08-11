@@ -8,7 +8,10 @@ const validProblem = {
   platform: "Codeforces",
   solvedAt: "2026-08-10",
   status: "C",
-  categories: ["图论", "位运算与状态压缩"],
+  knowledge: [
+    "graph.shortest-path.dijkstra",
+    "bitwise.xor.xor-linear-basis",
+  ],
   tags: ["XOR", "线性基"],
   nextReviewDate: "2026-08-14",
   reviewIntervalDays: 4,
@@ -31,21 +34,114 @@ describe("problem Front Matter schema", () => {
       futureField: "preserve me",
     });
 
-    expect(result.categories).toHaveLength(2);
+    expect(result.knowledge).toEqual([
+      "graph.shortest-path.dijkstra",
+      "bitwise.xor.xor-linear-basis",
+    ]);
     expect(result.reviews[0]).toMatchObject({ fromStatus: "C", toStatus: "B" });
     expect(result.futureField).toBe("preserve me");
   });
 
-  it("normalizes omitted collection fields to empty arrays", () => {
+  it("accepts explicit empty knowledge", () => {
+    const result = problemFrontmatterSchema.parse({
+      ...validProblem,
+      knowledge: [],
+    });
+
+    expect(result.knowledge).toEqual([]);
+  });
+
+  it("accepts known selectable, sibling, and cross-branch knowledge IDs", () => {
+    expect(
+      problemFrontmatterSchema.safeParse({
+        ...validProblem,
+        knowledge: ["graph.shortest-path.dijkstra"],
+      }).success,
+    ).toBe(true);
+    expect(
+      problemFrontmatterSchema.safeParse({
+        ...validProblem,
+        knowledge: [
+          "graph.shortest-path.dijkstra",
+          "graph.shortest-path.bellman-ford",
+        ],
+      }).success,
+    ).toBe(true);
+    expect(
+      problemFrontmatterSchema.safeParse({
+        ...validProblem,
+        knowledge: [
+          "graph.shortest-path.dijkstra",
+          "data-structure.heap",
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it.each([
+    ["duplicate ID", ["graph.shortest-path.dijkstra", "graph.shortest-path.dijkstra"]],
+    ["unknown ID", ["graph.shortest-path.unknown"]],
+    ["non-selectable Domain", ["graph"]],
+    ["non-selectable Topic", ["search.traversal"]],
+    [
+      "ancestor and descendant",
+      ["graph.shortest-path", "graph.shortest-path.dijkstra"],
+    ],
+  ])("rejects %s", (_name, knowledge) => {
+    expect(
+      problemFrontmatterSchema.safeParse({
+        ...validProblem,
+        knowledge,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires knowledge without defaulting it", () => {
+    expect(
+      problemFrontmatterSchema.safeParse({
+        ...validProblem,
+        knowledge: undefined,
+      }).success,
+    ).toBe(false);
+  });
+
+  it.each([
+    ["categories only", { categories: ["图论"] }],
+    ["categories empty", { knowledge: [], categories: [] }],
+    ["categories null", { knowledge: [], categories: null }],
+    [
+      "categories and knowledge",
+      { knowledge: ["graph.shortest-path.dijkstra"], categories: ["图论"] },
+    ],
+  ])("explicitly rejects legacy %s", (_name, taxonomyFields) => {
+    const result = problemFrontmatterSchema.safeParse({
+      ...validProblem,
+      knowledge: undefined,
+      ...taxonomyFields,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ["categories"],
+          message: "Legacy categories is not supported; use knowledge",
+        }),
+      );
+    }
+  });
+
+  it("continues to default unrelated collection fields", () => {
     const result = problemFrontmatterSchema.parse({
       id: "atcoder-abc381-f",
       title: "Minimal Problem",
       platform: "AtCoder",
       solvedAt: "2026-08-10",
       status: "A",
+      knowledge: [],
     });
 
-    expect(result.categories).toEqual([]);
+    expect(result.knowledge).toEqual([]);
     expect(result.tags).toEqual([]);
     expect(result.reviews).toEqual([]);
   });
@@ -53,8 +149,7 @@ describe("problem Front Matter schema", () => {
   it.each([
     ["invalid status", { ...validProblem, status: "E" }],
     ["invalid date", { ...validProblem, solvedAt: "2026-02-30" }],
-    ["non-array categories", { ...validProblem, categories: "图论" }],
-    ["duplicate categories", { ...validProblem, categories: ["图论", "图论"] }],
+    ["non-array knowledge", { ...validProblem, knowledge: "graph" }],
     ["duplicate tags", { ...validProblem, tags: ["XOR", "XOR"] }],
     ["zero duration", { ...validProblem, durationMinutes: 0 }],
   ])("rejects %s", (_name, input) => {

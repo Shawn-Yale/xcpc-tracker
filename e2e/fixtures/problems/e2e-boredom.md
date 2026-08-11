@@ -7,8 +7,8 @@ problem: A
 rating: 1500
 solvedAt: "2026-08-05"
 status: C
-categories:
-  - 动态规划
+knowledge:
+  - dynamic-programming.linear
 tags:
   - 线性 DP
   - 值域 DP
@@ -20,4 +20,3 @@ reviews: []
 # 题意抽象
 
 E2E 测试专用题目。
-

@@ -27,7 +27,7 @@ const editableFields = new Set<string>([
   "solvedAt",
   "durationMinutes",
   "status",
-  "categories",
+  "knowledge",
   "tags",
   "nextReviewDate",
   "reviewIntervalDays",

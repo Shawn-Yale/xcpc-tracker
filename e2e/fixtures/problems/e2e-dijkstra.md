@@ -7,9 +7,8 @@ problem: C
 rating: 1900
 solvedAt: "2026-07-11"
 status: B
-categories:
-  - 图论
-  - 数据结构
+knowledge:
+  - graph.shortest-path.dijkstra
 tags:
   - Dijkstra
   - 最短路
@@ -30,4 +29,3 @@ E2E 测试专用最短路题目。
 # 正确思路
 
 使用优先队列实现 Dijkstra。
-

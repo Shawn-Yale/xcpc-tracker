@@ -40,7 +40,7 @@ function frontmatterFromEditor(input: ProblemEditorInput) {
     solvedAt: input.solvedAt,
     durationMinutes: input.durationMinutes,
     status: input.status,
-    categories: input.categories,
+    knowledge: input.knowledge,
     tags: input.tags,
     nextReviewDate: input.nextReviewDate,
     reviewIntervalDays: input.reviewIntervalDays,
@@ -59,7 +59,7 @@ function editableFrontmatter(input: ProblemEditorInput) {
     solvedAt: input.solvedAt,
     durationMinutes: input.durationMinutes,
     status: input.status,
-    categories: input.categories,
+    knowledge: input.knowledge,
     tags: input.tags,
     nextReviewDate: input.nextReviewDate,
     reviewIntervalDays: input.reviewIntervalDays,
@@ -83,10 +83,12 @@ function writeErrorState(error: unknown, operation: "新增" | "更新") {
 }
 
 function refreshProblemViews(id: string): void {
+  revalidatePath("/");
   revalidatePath("/problems");
   revalidatePath(`/problems/${id}`);
-  revalidatePath("/knowledge");
-  revalidatePath("/status");
+  revalidatePath("/knowledge", "layout");
+  revalidatePath("/statistics");
+  revalidatePath("/status", "layout");
   revalidatePath("/review");
 }
 

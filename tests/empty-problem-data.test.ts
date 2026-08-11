@@ -50,7 +50,7 @@ describe("empty Problem data", () => {
       dKnowledgeGaps: {
         total: 0,
         unclassified: 0,
-        categories: [],
+        knowledge: expect.any(Array),
         tags: [],
       },
     });

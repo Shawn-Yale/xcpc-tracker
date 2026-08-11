@@ -16,6 +16,7 @@ function scheduled(id: string, date: string | null): ProblemFile {
       platform: "AtCoder",
       solvedAt: "2026-01-01",
       status: "C",
+      knowledge: [],
       nextReviewDate: date,
       reviewIntervalDays: date == null ? null : 7,
     }),

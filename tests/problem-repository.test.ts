@@ -31,7 +31,7 @@ function makeProblem(id: string, title = "Test Problem"): ProblemDocument {
       platform: "Codeforces",
       solvedAt: "2026-08-01",
       status: "C",
-      categories: ["图论"],
+      knowledge: ["graph.shortest-path.dijkstra"],
       tags: ["最短路"],
       nextReviewDate: "2026-08-08",
       reviewIntervalDays: 7,
@@ -123,6 +123,42 @@ describe("ProblemRepository loading", () => {
     ]);
   });
 
+  it("isolates files containing legacy categories while retaining valid problems", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    await repository.create(makeProblem("valid-problem"));
+    await writeFile(
+      path.join(directory, "legacy-problem.md"),
+      `---
+id: legacy-problem
+title: Legacy Problem
+platform: Codeforces
+solvedAt: "2026-08-01"
+status: C
+knowledge: []
+categories: []
+tags: []
+reviews: []
+---
+body
+`,
+      "utf8",
+    );
+
+    const result = await new ProblemRepository(directory).loadAll();
+
+    expect(result.problems.map((problem) => problem.frontmatter.id)).toEqual([
+      "valid-problem",
+    ]);
+    expect(result.errors).toEqual([
+      expect.objectContaining({
+        fileName: "legacy-problem.md",
+        code: "validation-error",
+        message: expect.stringContaining("Legacy categories is not supported"),
+      }),
+    ]);
+  });
+
   it("reports filename mismatches and every member of a duplicate-ID group", async () => {
     const directory = await makeDirectory();
     const duplicate = serializeProblemMarkdown(
@@ -173,6 +209,8 @@ describe("ProblemRepository writes", () => {
     expect(updated.frontmatter.futureField).toBe("keep-me");
     expect(updated.content).toContain("测试正文");
     expect(source).not.toContain(".tmp");
+    expect(source).toContain("knowledge:");
+    expect(source).not.toContain("categories:");
     await expect(repository.findById("safe-update")).resolves.toMatchObject({
       frontmatter: { rating: 1900 },
     });

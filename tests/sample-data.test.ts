@@ -37,7 +37,7 @@ describe("test-owned Problem fixtures", () => {
       new Set(["A", "B", "C", "D"]),
     );
     expect(
-      result.problems.some((problem) => problem.frontmatter.categories.length > 1),
+      result.problems.some((problem) => problem.frontmatter.knowledge.length > 1),
     ).toBe(true);
     expect(
       result.problems.some((problem) => problem.frontmatter.rating == null),

@@ -57,7 +57,19 @@ export default async function ProblemsPage({ searchParams }: ProblemsPageProps) 
 
       <LoadErrorSummary errors={errors} />
 
-      {problems.length === 0 ? (
+      {query.knowledge.state === "invalid" ? (
+        <section className="border border-rose-200 bg-rose-50 px-5 py-4" role="alert">
+          <h2 className="font-semibold text-rose-900">Invalid / unknown knowledge filter</h2>
+          <p className="mt-1 text-sm text-rose-800">
+            无法识别筛选值：<code>{query.knowledge.rawValue || "(empty)"}</code>
+          </p>
+          <Link className="mt-3 inline-flex text-sm font-semibold text-rose-900 underline" href="/problems">
+            清除筛选
+          </Link>
+        </section>
+      ) : null}
+
+      {query.knowledge.state === "invalid" ? null : problems.length === 0 ? (
         <section className="border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
           <h2 className="text-lg font-semibold text-slate-900">暂时没有题目</h2>
           <p className="mt-2 text-sm text-slate-600">

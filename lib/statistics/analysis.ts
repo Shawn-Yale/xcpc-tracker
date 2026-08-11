@@ -1,4 +1,4 @@
-import { categoryValues, type Category } from "@/config/categories";
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { platformValues, type Platform } from "@/config/platforms";
 import { statusValues, type Status } from "@/config/status";
 import {
@@ -10,7 +10,7 @@ import {
 import type { ProblemFile } from "@/lib/problems/types";
 
 import {
-  getCategoryStats,
+  getKnowledgeStats,
   getProblemStats,
   getTagCounts,
   type StatusCounts,
@@ -260,25 +260,25 @@ export function getDKnowledgeGaps(problems: readonly ProblemFile[]) {
   const dProblems = problems.filter(
     (problem) => problem.frontmatter.status === "D",
   );
-  const categoryCounts = categoryValues
-    .map((category) => ({
-      category,
+  const knowledgeCounts = knowledgeCatalog.entries
+    .map((entry) => ({
+      id: entry.id,
       count: dProblems.filter((problem) =>
-        problem.frontmatter.categories.includes(category),
+        problem.frontmatter.knowledge.includes(entry.id),
       ).length,
     }))
     .filter((item) => item.count > 0)
     .sort(
       (left, right) =>
-        right.count - left.count || left.category.localeCompare(right.category),
+        right.count - left.count || left.id.localeCompare(right.id),
     );
 
   return {
     total: dProblems.length,
     unclassified: dProblems.filter(
-      (problem) => problem.frontmatter.categories.length === 0,
+      (problem) => problem.frontmatter.knowledge.length === 0,
     ).length,
-    categories: categoryCounts satisfies Array<{ category: Category; count: number }>,
+    knowledge: knowledgeCounts,
     tags: getTagCounts(dProblems),
   };
 }
@@ -300,7 +300,7 @@ export function getStatisticsSummary(
 
   return {
     overall: getProblemStats(problems),
-    categories: getCategoryStats(problems),
+    knowledge: getKnowledgeStats(problems),
     ratingDistribution: getRatingDistribution(problems),
     platformDistribution: getPlatformDistribution(problems),
     trainingVolume: getTrainingVolume(problems, today),

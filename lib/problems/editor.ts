@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { categoryValues } from "@/config/categories";
 import { platformValues, type Platform } from "@/config/platforms";
 import { statusValues } from "@/config/status";
 import { dateOnlySchema } from "@/lib/date/date-only";
+import { problemKnowledgeSchema } from "@/lib/problems/schema";
 
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const positiveIntegerSchema = z.number().int().positive();
@@ -45,7 +45,7 @@ export const problemEditorSchema = z
     solvedAt: dateOnlySchema,
     durationMinutes: positiveIntegerSchema.nullable(),
     status: z.enum(statusValues, { error: "请选择有效状态" }),
-    categories: z.array(z.enum(categoryValues)),
+    knowledge: problemKnowledgeSchema,
     tags: z.array(z.string().trim().min(1)),
     scheduleReview: z.boolean(),
     nextReviewDate: dateOnlySchema.nullable(),
@@ -149,7 +149,7 @@ export function parseProblemEditorFormData(formData: FormData) {
     solvedAt: formData.get("solvedAt"),
     durationMinutes: optionalNumber(formData.get("durationMinutes")),
     status: formData.get("status"),
-    categories: [...new Set(formData.getAll("categories"))],
+    knowledge: formData.getAll("knowledge"),
     tags: normalizeTags(tagsValue),
     scheduleReview,
     nextReviewDate: scheduleReview

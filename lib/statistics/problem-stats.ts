@@ -1,5 +1,7 @@
-import { categoryValues, type Category } from "@/config/categories";
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { statusValues, type Status } from "@/config/status";
+import { expandKnowledgeToAncestors } from "@/lib/knowledge/catalog";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import { isMastered } from "@/lib/review/rules";
 import type { ProblemFile } from "@/lib/problems/types";
 
@@ -12,8 +14,10 @@ export type ProblemStats = {
   masteryRate: number;
 };
 
-export type CategoryStats = ProblemStats & {
-  category: Category;
+export type KnowledgeStats = {
+  id: KnowledgeId;
+  direct: ProblemStats;
+  rollup: ProblemStats;
 };
 
 export type TagCount = {
@@ -45,16 +49,28 @@ export function getProblemStats(problems: readonly ProblemFile[]): ProblemStats 
   };
 }
 
-export function getCategoryStats(
+export function getKnowledgeStats(
   problems: readonly ProblemFile[],
-): CategoryStats[] {
-  return categoryValues.map((category) => ({
-    category,
-    ...getProblemStats(
-      problems.filter((problem) =>
-        problem.frontmatter.categories.includes(category),
-      ),
-    ),
+): KnowledgeStats[] {
+  const directProblems = new Map<KnowledgeId, ProblemFile[]>();
+  const rollupProblems = new Map<KnowledgeId, ProblemFile[]>();
+
+  for (const problem of problems) {
+    for (const id of new Set(problem.frontmatter.knowledge)) {
+      directProblems.set(id, [...(directProblems.get(id) ?? []), problem]);
+    }
+    for (const id of expandKnowledgeToAncestors(
+      knowledgeCatalog,
+      problem.frontmatter.knowledge,
+    )) {
+      rollupProblems.set(id, [...(rollupProblems.get(id) ?? []), problem]);
+    }
+  }
+
+  return knowledgeCatalog.entries.map((entry) => ({
+    id: entry.id,
+    direct: getProblemStats(directProblems.get(entry.id) ?? []),
+    rollup: getProblemStats(rollupProblems.get(entry.id) ?? []),
   }));
 }
 

@@ -6,6 +6,7 @@ import { MarkdownContent } from "@/components/problems/markdown-content";
 import { ReviewDate } from "@/components/problems/review-date";
 import { StatusBadge } from "@/components/problems/status-badge";
 import { toLocalDateOnly } from "@/lib/date/local-date";
+import { getKnowledgeNames } from "@/lib/knowledge/presentation";
 import { ProblemDataError } from "@/lib/problems/errors";
 import { createProblemRepository } from "@/lib/problems/repository";
 import type { ProblemFile } from "@/lib/problems/types";
@@ -239,7 +240,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
               Knowledge
             </h2>
             <div className="mt-3">
-              <DetailTags values={frontmatter.categories} />
+              <DetailTags values={getKnowledgeNames(frontmatter.knowledge)} />
             </div>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Tags
