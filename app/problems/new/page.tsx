@@ -23,6 +23,8 @@ export default function NewProblemPage() {
     rating: null,
     solvedAt: toLocalDateOnly(new Date()),
     durationMinutes: null,
+    solutionLanguage: null,
+    solutionCode: null,
     status: "C",
     knowledge: [],
     tags: [],

@@ -9,6 +9,11 @@ import type { KnowledgeId } from "@/lib/knowledge/types";
 
 const positiveIntegerSchema = z.number().int().positive();
 const optionalTextSchema = z.string().trim().min(1).nullable().optional();
+const optionalSolutionCodeSchema = z
+  .string()
+  .transform((value) => (value.trim().length === 0 ? null : value))
+  .nullable()
+  .optional();
 
 export const statusSchema = z.enum(statusValues);
 export const platformSchema = z.enum(platformValues);
@@ -85,6 +90,8 @@ export const problemFrontmatterSchema = z
     rating: positiveIntegerSchema.nullable().optional(),
     solvedAt: dateOnlySchema,
     durationMinutes: positiveIntegerSchema.nullable().optional(),
+    solutionLanguage: optionalTextSchema,
+    solutionCode: optionalSolutionCodeSchema,
     status: statusSchema,
     knowledge: problemKnowledgeSchema,
     tags: z
@@ -108,6 +115,34 @@ export const problemFrontmatterSchema = z
     },
   )
   .superRefine((problem, context) => {
+    const solutionLanguageState =
+      problem.solutionLanguage === undefined
+        ? "undefined"
+        : problem.solutionLanguage === null
+          ? "null"
+          : "value";
+    const solutionCodeState =
+      problem.solutionCode === undefined
+        ? "undefined"
+        : problem.solutionCode === null
+          ? "null"
+          : "value";
+
+    if (solutionLanguageState !== solutionCodeState) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "solutionLanguage and solutionCode must both be absent, both be null, or both have values",
+        path:
+          solutionLanguageState === "undefined"
+            ? ["solutionLanguage"]
+            : solutionCodeState === "undefined" ||
+                solutionLanguageState === "value"
+              ? ["solutionCode"]
+              : ["solutionLanguage"],
+      });
+    }
+
     const hasReviewDate = problem.nextReviewDate != null;
     const hasReviewInterval = problem.reviewIntervalDays != null;
 

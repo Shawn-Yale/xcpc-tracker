@@ -8,6 +8,10 @@ import { problemKnowledgeSchema } from "@/lib/problems/schema";
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const positiveIntegerSchema = z.number().int().positive();
 const optionalTextSchema = z.string().trim().min(1).nullable();
+const optionalSolutionCodeSchema = z
+  .string()
+  .transform((value) => (value.trim().length === 0 ? null : value))
+  .nullable();
 
 export const retrospectiveTemplate = `# 题意抽象
 
@@ -44,6 +48,8 @@ export const problemEditorSchema = z
     rating: positiveIntegerSchema.nullable(),
     solvedAt: dateOnlySchema,
     durationMinutes: positiveIntegerSchema.nullable(),
+    solutionLanguage: optionalTextSchema.optional(),
+    solutionCode: optionalSolutionCodeSchema.optional(),
     status: z.enum(statusValues, { error: "请选择有效状态" }),
     knowledge: problemKnowledgeSchema,
     tags: z.array(z.string().trim().min(1)),
@@ -53,6 +59,37 @@ export const problemEditorSchema = z
     content: z.string(),
   })
   .superRefine((input, context) => {
+    const solutionLanguageState =
+      input.solutionLanguage === undefined
+        ? "undefined"
+        : input.solutionLanguage === null
+          ? "null"
+          : "value";
+    const solutionCodeState =
+      input.solutionCode === undefined
+        ? "undefined"
+        : input.solutionCode === null
+          ? "null"
+          : "value";
+
+    if (solutionLanguageState !== solutionCodeState) {
+      context.addIssue({
+        code: "custom",
+        message: solutionLanguageState === "value"
+          ? "填写 AC 代码语言后必须填写代码"
+          : solutionCodeState === "value"
+            ? "填写 AC 代码后必须填写语言"
+            : "AC 代码语言和代码必须同时提交或同时清空",
+        path:
+          solutionLanguageState === "undefined"
+            ? ["solutionLanguage"]
+            : solutionCodeState === "undefined" ||
+                solutionLanguageState === "value"
+              ? ["solutionCode"]
+              : ["solutionLanguage"],
+      });
+    }
+
     if (
       input.scheduleReview &&
       (input.nextReviewDate == null || input.reviewIntervalDays == null)
@@ -134,6 +171,10 @@ function stringValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
+function optionalSolutionCode(value: FormDataEntryValue | null): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 export function parseProblemEditorFormData(formData: FormData) {
   const scheduleReview = formData.get("scheduleReview") === "on";
   const tagsValue = stringValue(formData.get("tags"));
@@ -148,6 +189,12 @@ export function parseProblemEditorFormData(formData: FormData) {
     rating: optionalNumber(formData.get("rating")),
     solvedAt: formData.get("solvedAt"),
     durationMinutes: optionalNumber(formData.get("durationMinutes")),
+    ...(formData.has("solutionLanguage")
+      ? { solutionLanguage: optionalText(formData.get("solutionLanguage")) }
+      : {}),
+    ...(formData.has("solutionCode")
+      ? { solutionCode: optionalSolutionCode(formData.get("solutionCode")) }
+      : {}),
     status: formData.get("status"),
     knowledge: formData.getAll("knowledge"),
     tags: normalizeTags(tagsValue),

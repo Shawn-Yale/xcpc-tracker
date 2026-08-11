@@ -10,6 +10,17 @@ const readOnlyRoutes = [
   ["/statistics", "统计分析"],
 ] as const;
 
+const expectedSolutionCode = [
+  "#include <bits/stdc++.h>",
+  "",
+  "// 中文注释：安全显示 HTML-like text 与 Markdown fence",
+  "int main() {",
+  '  const char* symbols = R"(<script> & </div> ``` { } # \\\\)";',
+  `  const char* longLine = "${"x".repeat(240)}";`,
+  "  return 0;",
+  "}",
+].join("\n");
+
 test("top-level routes render without page-level overflow", async ({ page }) => {
   for (const [route, heading] of readOnlyRoutes) {
     await page.goto(route);
@@ -105,6 +116,94 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await expect(page.getByLabel("稳定 ID *")).toHaveValue("e2e-dijkstra");
   await expect(page.getByLabel("稳定 ID *")).toHaveAttribute("readonly", "");
   await expect(page.getByLabel("Dijkstra", { exact: true })).toBeChecked();
+  await expect(page.getByLabel("编程语言", { exact: true })).toHaveValue(
+    "C++17",
+  );
+});
+
+test("AC solution disclosure is safe, collapsible, and contained", async ({
+  page,
+}) => {
+  await page.goto("/problems/e2e-dijkstra");
+  const solutionSection = page.locator(
+    'section[aria-labelledby="ac-solution-title"]',
+  );
+  const disclosure = solutionSection.locator("details");
+  const summary = solutionSection.locator("summary");
+  const language = solutionSection.getByText("C++17", { exact: true });
+  const codeBlock = solutionSection.locator("pre");
+
+  await expect(solutionSection.getByRole("heading", { name: "AC 代码" })).toBeVisible();
+  await expect(summary).toHaveText("查看 AC 代码");
+  await expect(disclosure).not.toHaveAttribute("open", "");
+  await expect(language).toBeHidden();
+  await expect(codeBlock).toBeHidden();
+
+  await summary.click();
+  await expect(disclosure).toHaveAttribute("open", "");
+  await expect(language).toBeVisible();
+  await expect(codeBlock).toBeVisible();
+  await expect(codeBlock).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  expect(await codeBlock.locator("code > span").count()).toBeGreaterThan(1);
+  expect(await codeBlock.textContent()).toBe(expectedSolutionCode);
+
+  const overflow = await page.evaluate(() => {
+    const code = document.querySelector<HTMLElement>(
+      'section[aria-labelledby="ac-solution-title"] pre',
+    );
+
+    if (!code) {
+      throw new Error("AC solution code block was not rendered");
+    }
+
+    return {
+      codeClientWidth: code.clientWidth,
+      codeScrollWidth: code.scrollWidth,
+      documentClientWidth: document.documentElement.clientWidth,
+      documentScrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+
+  expect(overflow.codeScrollWidth).toBeGreaterThan(overflow.codeClientWidth);
+  expect(overflow.documentScrollWidth).toBeLessThanOrEqual(
+    overflow.documentClientWidth,
+  );
+
+  await summary.click();
+  await expect(disclosure).not.toHaveAttribute("open", "");
+  await expect(codeBlock).toBeHidden();
+
+  await page.goto("/problems/e2e-boredom");
+  await expect(
+    page.locator('section[aria-labelledby="ac-solution-title"]'),
+  ).toHaveCount(0);
+});
+
+test("unknown durable solution languages remain editable and readable", async ({
+  page,
+}) => {
+  await page.goto("/problems/e2e-legacy-solution");
+  const solutionSection = page.locator(
+    'section[aria-labelledby="ac-solution-title"]',
+  );
+  await solutionSection.locator("summary").click();
+  await expect(
+    solutionSection.getByText("C++23", { exact: true }),
+  ).toBeVisible();
+  await expect(solutionSection.locator("pre")).toHaveText(
+    "legacy <script> & </div> ``` code",
+  );
+  await expect(solutionSection.locator("pre")).toHaveCSS(
+    "background-color",
+    "rgb(255, 255, 255)",
+  );
+
+  await page.goto("/problems/e2e-legacy-solution/edit");
+  const languageSelect = page.getByLabel("编程语言", { exact: true });
+  await expect(languageSelect).toHaveValue("C++23");
+  await expect(
+    languageSelect.locator('option[value="C++23"]'),
+  ).toHaveText("C++23（当前记录）");
 });
 
 test("create form exposes safe client-side interactions", async ({ page }) => {
@@ -122,6 +221,19 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
   await page.getByLabel("搜索知识点").fill("Bellman");
   await page.getByLabel("Bellman–Ford", { exact: true }).check();
   await expect(page.getByText("图论 / 最短路 / Bellman–Ford")).toBeVisible();
+
+  const languageSelect = page.getByLabel("编程语言", { exact: true });
+  await expect(languageSelect).toHaveAttribute("name", "solutionLanguage");
+  await expect(languageSelect).toHaveValue("");
+  await expect(languageSelect.locator("option")).toHaveText([
+    "未选择",
+    "C",
+    "C++11",
+    "C++14",
+    "C++17",
+    "C++20",
+    "Python 3",
+  ]);
 });
 
 test("hierarchical Knowledge navigation resolves canonical paths", async ({ page }) => {

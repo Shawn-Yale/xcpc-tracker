@@ -6,6 +6,16 @@ contest: E2E Alpha Round 20
 problem: C
 rating: 1900
 solvedAt: "2026-07-11"
+solutionLanguage: C++17
+solutionCode: |-
+  #include <bits/stdc++.h>
+
+  // 中文注释：安全显示 HTML-like text 与 Markdown fence
+  int main() {
+    const char* symbols = R"(<script> & </div> ``` { } # \\)";
+    const char* longLine = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    return 0;
+  }
 status: B
 knowledge:
   - graph.shortest-path.dijkstra
