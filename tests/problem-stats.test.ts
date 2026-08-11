@@ -1,10 +1,6 @@
-import path from "node:path";
-
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { categoryMetadata, categoryValues, getCategoryBySlug } from "@/config/categories";
-import { ProblemRepository } from "@/lib/problems/repository";
-import type { ProblemFile } from "@/lib/problems/types";
 import {
   getCategoryStats,
   getProblemStats,
@@ -12,19 +8,11 @@ import {
   getTagCounts,
 } from "@/lib/statistics/problem-stats";
 
-let problems: ProblemFile[];
-
-beforeAll(async () => {
-  const result = await new ProblemRepository(
-    path.join(process.cwd(), "data", "problems"),
-  ).loadAll();
-  expect(result.errors).toEqual([]);
-  problems = result.problems;
-});
+import { createProblemFileFixtures } from "./fixtures/problem-files";
 
 describe("problem mastery statistics", () => {
   it("calculates global counts without duplicating multi-category problems", () => {
-    expect(getProblemStats(problems)).toEqual({
+    expect(getProblemStats(createProblemFileFixtures())).toEqual({
       total: 8,
       statusCounts: { A: 2, B: 3, C: 2, D: 1 },
       mastered: 5,
@@ -42,7 +30,7 @@ describe("problem mastery statistics", () => {
   });
 
   it("produces direct A/B/C/D pool counts", () => {
-    expect(getStatusStats(problems)).toEqual([
+    expect(getStatusStats(createProblemFileFixtures())).toEqual([
       { status: "A", count: 2 },
       { status: "B", count: 3 },
       { status: "C", count: 2 },
@@ -54,7 +42,7 @@ describe("problem mastery statistics", () => {
 describe("knowledge aggregation", () => {
   it("counts one problem in every category it belongs to", () => {
     const stats = new Map(
-      getCategoryStats(problems).map((categoryStats) => [
+      getCategoryStats(createProblemFileFixtures()).map((categoryStats) => [
         categoryStats.category,
         categoryStats,
       ]),
@@ -72,7 +60,7 @@ describe("knowledge aggregation", () => {
   });
 
   it("aggregates flat tags in count and name order", () => {
-    const tags = getTagCounts(problems);
+    const tags = getTagCounts(createProblemFileFixtures());
 
     expect(tags).toContainEqual({ tag: "Dijkstra", count: 1 });
     expect(tags).toContainEqual({ tag: "线性 DP", count: 2 });

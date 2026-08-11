@@ -2,11 +2,14 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProblemDataError } from "@/lib/problems/errors";
 import { serializeProblemMarkdown } from "@/lib/problems/markdown";
-import { ProblemRepository } from "@/lib/problems/repository";
+import {
+  createProblemRepository,
+  ProblemRepository,
+} from "@/lib/problems/repository";
 import {
   problemFrontmatterSchema,
   type ProblemDocument,
@@ -48,11 +51,34 @@ function makeProblem(id: string, title = "Test Problem"): ProblemDocument {
 }
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
       rm(directory, { recursive: true, force: true }),
     ),
   );
+});
+
+describe("ProblemRepository directory selection", () => {
+  it("uses an explicit environment directory without changing the production default", async () => {
+    const directory = await makeDirectory();
+    vi.stubEnv("XCPC_PROBLEMS_DIRECTORY", directory);
+    const repository = createProblemRepository();
+
+    expect(repository.directory).toBe(path.resolve(directory));
+    await expect(repository.loadAll()).resolves.toEqual({
+      problems: [],
+      errors: [],
+    });
+  });
+
+  it("keeps the repository data/problems directory as the default", () => {
+    vi.stubEnv("XCPC_PROBLEMS_DIRECTORY", "");
+
+    expect(createProblemRepository().directory).toBe(
+      path.join(process.cwd(), "data", "problems"),
+    );
+  });
 });
 
 describe("ProblemRepository loading", () => {

@@ -44,15 +44,15 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await page.getByRole("button", { name: "应用筛选" }).click();
   await expect(page).toHaveURL(/status=C/);
   await expect(
-    page.locator('a:visible[href="/problems/codeforces-455-a"]'),
-  ).toHaveText("Boredom");
+    page.locator('a:visible[href="/problems/e2e-boredom"]'),
+  ).toHaveText("Boredom E2E Fixture");
 
-  await page.goto("/problems/codeforces-20-c");
-  await expect(page.getByRole("heading", { level: 1, name: "Dijkstra?" })).toBeVisible();
+  await page.goto("/problems/e2e-dijkstra");
+  await expect(page.getByRole("heading", { level: 1, name: "Dijkstra E2E Fixture" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "题意抽象" })).toBeVisible();
   await page.getByRole("link", { name: "编辑题目" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "编辑题目" })).toBeVisible();
-  await expect(page.getByLabel("稳定 ID *")).toHaveValue("codeforces-20-c");
+  await expect(page.getByLabel("稳定 ID *")).toHaveValue("e2e-dijkstra");
   await expect(page.getByLabel("稳定 ID *")).toHaveAttribute("readonly", "");
 });
 
@@ -71,7 +71,7 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
 });
 
 test("Review form updates its interval suggestion", async ({ page }) => {
-  await page.goto("/review/codeforces-20-c");
+  await page.goto("/review/e2e-dijkstra");
   await page.getByLabel("新状态").selectOption("D");
   await expect(page.getByLabel("下次间隔（天）")).toHaveValue("3");
 });
