@@ -283,6 +283,35 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
         <FieldError errors={fieldErrors.content} />
       </section>
 
+      <section aria-labelledby="solution-heading">
+        <div className="border-b border-slate-200 pb-3">
+          <h2 className="text-lg font-semibold text-slate-950" id="solution-heading">AC 代码（可选）</h2>
+          <p className="mt-1 text-sm text-slate-600">记录最终通过的编程语言与完整实现；两项需要同时填写或同时清空。</p>
+        </div>
+        <div className="mt-5 space-y-5">
+          <label className="block text-sm font-semibold text-slate-800">
+            编程语言
+            <input
+              className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={initial.solutionLanguage ?? ""}
+              name="solutionLanguage"
+              placeholder="例如：C++17"
+            />
+            <FieldError errors={fieldErrors.solutionLanguage} />
+          </label>
+          <label className="block text-sm font-semibold text-slate-800">
+            代码
+            <textarea
+              className="mt-2 block min-h-80 w-full resize-y rounded-md border border-slate-300 bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={initial.solutionCode ?? ""}
+              name="solutionCode"
+              spellCheck={false}
+            />
+            <FieldError errors={fieldErrors.solutionCode} />
+          </label>
+        </div>
+      </section>
+
       <div className="sticky bottom-0 flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50/95 py-4 backdrop-blur">
         <p className="text-xs text-slate-500">保存后将直接写入本地 Markdown。</p>
         <button className="rounded-md bg-sky-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60" disabled={pending} type="submit">

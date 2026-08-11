@@ -32,6 +32,8 @@ export default async function EditProblemPage({ params }: EditProblemPageProps) 
     rating: frontmatter.rating ?? null,
     solvedAt: frontmatter.solvedAt,
     durationMinutes: frontmatter.durationMinutes ?? null,
+    solutionLanguage: frontmatter.solutionLanguage,
+    solutionCode: frontmatter.solutionCode,
     status: frontmatter.status,
     knowledge: frontmatter.knowledge,
     tags: frontmatter.tags,
