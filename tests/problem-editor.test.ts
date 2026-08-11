@@ -130,4 +130,99 @@ describe("problem editor normalization", () => {
       expect(result.data.reviewIntervalDays).toBeNull();
     }
   });
+
+  it("keeps missing solution fields absent", () => {
+    const result = parseProblemEditorFormData(validFormData());
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.solutionLanguage).toBeUndefined();
+      expect(result.data.solutionCode).toBeUndefined();
+      expect(Object.hasOwn(result.data, "solutionLanguage")).toBe(false);
+      expect(Object.hasOwn(result.data, "solutionCode")).toBe(false);
+    }
+  });
+
+  it("normalizes present empty solution fields to null", () => {
+    const formData = validFormData();
+    formData.set("solutionLanguage", " \t ");
+    formData.set("solutionCode", " \n\t ");
+    const result = parseProblemEditorFormData(formData);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.solutionLanguage).toBeNull();
+      expect(result.data.solutionCode).toBeNull();
+    }
+  });
+
+  it.each([
+    ["missing language and present-empty code", undefined, "", "solutionLanguage"],
+    ["present-empty language and missing code", "", undefined, "solutionCode"],
+    [
+      "missing language and whitespace-only code",
+      undefined,
+      " \n\t ",
+      "solutionLanguage",
+    ],
+    [
+      "whitespace-only language and missing code",
+      " \t ",
+      undefined,
+      "solutionCode",
+    ],
+  ])("rejects %s", (_name, language, code, expectedField) => {
+    const formData = validFormData();
+
+    if (language !== undefined) {
+      formData.set("solutionLanguage", language);
+    }
+
+    if (code !== undefined) {
+      formData.set("solutionCode", code);
+    }
+
+    const result = parseProblemEditorFormData(formData);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toContainEqual(
+        expect.objectContaining({ path: [expectedField] }),
+      );
+    }
+  });
+
+  it("trims solution language but preserves non-empty solution code exactly", () => {
+    const formData = validFormData();
+    const code = "\n\t// 中文注释\nint main() {}\n";
+    formData.set("solutionLanguage", "  GNU++17  ");
+    formData.set("solutionCode", code);
+    const result = parseProblemEditorFormData(formData);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.solutionLanguage).toBe("GNU++17");
+      expect(result.data.solutionCode).toBe(code);
+    }
+  });
+
+  it.each([
+    ["solutionLanguage", "C++20", "solutionCode", "   ", "solutionCode"],
+    ["solutionLanguage", "", "solutionCode", "int main() {}", "solutionLanguage"],
+  ])(
+    "reports partial solution input on the related field",
+    (languageKey, language, codeKey, code, expectedField) => {
+      const formData = validFormData();
+      formData.set(languageKey, language);
+      formData.set(codeKey, code);
+      const result = parseProblemEditorFormData(formData);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues).toContainEqual(
+          expect.objectContaining({ path: [expectedField] }),
+        );
+      }
+    },
+  );
 });

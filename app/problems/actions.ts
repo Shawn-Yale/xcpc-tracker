@@ -39,6 +39,12 @@ function frontmatterFromEditor(input: ProblemEditorInput) {
     rating: input.rating,
     solvedAt: input.solvedAt,
     durationMinutes: input.durationMinutes,
+    ...(input.solutionLanguage !== undefined
+      ? { solutionLanguage: input.solutionLanguage }
+      : {}),
+    ...(input.solutionCode !== undefined
+      ? { solutionCode: input.solutionCode }
+      : {}),
     status: input.status,
     knowledge: input.knowledge,
     tags: input.tags,
@@ -58,6 +64,12 @@ function editableFrontmatter(input: ProblemEditorInput) {
     rating: input.rating,
     solvedAt: input.solvedAt,
     durationMinutes: input.durationMinutes,
+    ...(input.solutionLanguage !== undefined
+      ? { solutionLanguage: input.solutionLanguage }
+      : {}),
+    ...(input.solutionCode !== undefined
+      ? { solutionCode: input.solutionCode }
+      : {}),
     status: input.status,
     knowledge: input.knowledge,
     tags: input.tags,

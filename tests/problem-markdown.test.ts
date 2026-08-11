@@ -26,6 +26,23 @@ futureField: keep-me
 判断一个数能否拆成两个正偶数。
 `;
 
+const cppSolution = [
+  "",
+  "#include <bits/stdc++.h>",
+  "using namespace std;",
+  "",
+  "// 区间最小值",
+  "int main() {",
+  '\tconst char* symbols = "< > & \\" \' ` { } # \\\\";',
+  '\tconst char* markdown = "```not a fence```";',
+  '\tconst char* html = "<section data-value=\'&\'>中文</section>";',
+  '\tconst char* raw = R"tag({ # \\ < > & })tag";',
+  "",
+  "\treturn 0;",
+  "}",
+  "",
+].join("\n");
+
 describe("problem Markdown parsing", () => {
   it("parses Front Matter separately from the untouched body", () => {
     const problem = parseProblemMarkdown(source);
@@ -130,10 +147,114 @@ describe("problem Markdown serialization", () => {
           durationMinutes: null,
           nextReviewDate: null,
           reviewIntervalDays: null,
+          solutionLanguage: null,
+          solutionCode: null,
         },
         content: parseProblemMarkdown(source).content,
       }),
     ).toBe(source);
+  });
+
+  it("round-trips solution code without changing whitespace or special content", () => {
+    const serialized = serializeProblemMarkdown(
+      {
+        ...parseProblemMarkdown(source).frontmatter,
+        solutionLanguage: "GNU++17",
+        solutionCode: cppSolution,
+      },
+      parseProblemMarkdown(source).content,
+    );
+    const parsed = parseProblemMarkdown(serialized);
+    const updated = updateProblemMarkdown(serialized, {
+      frontmatter: {
+        solutionLanguage: parsed.frontmatter.solutionLanguage,
+        solutionCode: parsed.frontmatter.solutionCode,
+      },
+    });
+    const reloaded = parseProblemMarkdown(updated);
+
+    expect(serialized).toContain("solutionCode: |");
+    expect(parsed.frontmatter.solutionCode).toBe(cppSolution);
+    expect(reloaded.frontmatter.solutionCode).toBe(cppSolution);
+    expect(updated).toBe(serialized);
+  });
+
+  it.each([
+    ["without a trailing newline", "int main() {\n\treturn 0;\n}"],
+    ["with one trailing newline", "int main() {\n\treturn 0;\n}\n"],
+    ["with a leading blank line", "\nint main() {}"],
+    ["with a blank line between blocks", "int a() {}\n\nint b() {}"],
+  ])("preserves solution code %s", (_name, code) => {
+    const serialized = serializeProblemMarkdown(
+      {
+        ...parseProblemMarkdown(source).frontmatter,
+        solutionLanguage: "C++20",
+        solutionCode: code,
+      },
+      parseProblemMarkdown(source).content,
+    );
+
+    expect(parseProblemMarkdown(serialized).frontmatter.solutionCode).toBe(code);
+  });
+
+  it("does not fold a very long solution line", () => {
+    const longLine = `const char* data = "${"abc<&>#{}".repeat(80)}";`;
+    const serialized = serializeProblemMarkdown(
+      {
+        ...parseProblemMarkdown(source).frontmatter,
+        solutionLanguage: "Some Future Compiler 99",
+        solutionCode: longLine,
+      },
+      parseProblemMarkdown(source).content,
+    );
+
+    expect(serialized).toContain(longLine);
+    expect(parseProblemMarkdown(serialized).frontmatter.solutionCode).toBe(longLine);
+  });
+
+  it("preserves CRLF inside solution code under the current serializer behavior", () => {
+    const code = "int main() {\r\n\treturn 0;\r\n}\r\n";
+    const serialized = serializeProblemMarkdown(
+      {
+        ...parseProblemMarkdown(source).frontmatter,
+        solutionLanguage: "C++17",
+        solutionCode: code,
+      },
+      parseProblemMarkdown(source).content,
+    );
+
+    expect(parseProblemMarkdown(serialized).frontmatter.solutionCode).toBe(code);
+  });
+
+  it("updates and clears solution fields while preserving all unrelated document data", () => {
+    const withSolution = updateProblemMarkdown(source, {
+      frontmatter: {
+        solutionLanguage: " C++17 ",
+        solutionCode: cppSolution,
+      },
+    });
+    const parsed = parseProblemMarkdown(withSolution);
+
+    expect(parsed.frontmatter.solutionLanguage).toBe("C++17");
+    expect(parsed.frontmatter.solutionCode).toBe(cppSolution);
+    expect(parsed.frontmatter.title).toBe("Watermelon");
+    expect(parsed.frontmatter.knowledge).toEqual(["math.number-theory"]);
+    expect(parsed.frontmatter.tags).toEqual([]);
+    expect(parsed.frontmatter.reviews).toEqual([]);
+    expect(parsed.frontmatter.futureField).toBe("keep-me");
+    expect(parsed.content).toBe(parseProblemMarkdown(source).content);
+    expect(withSolution).toContain("# Keep this identity comment.");
+
+    const cleared = updateProblemMarkdown(withSolution, {
+      frontmatter: { solutionLanguage: null, solutionCode: null },
+    });
+    const clearedProblem = parseProblemMarkdown(cleared);
+
+    expect(clearedProblem.frontmatter.solutionLanguage).toBeNull();
+    expect(clearedProblem.frontmatter.solutionCode).toBeNull();
+    expect(cleared).toContain("solutionLanguage: null");
+    expect(cleared).toContain("solutionCode: null");
+    expect(clearedProblem.content).toBe(parseProblemMarkdown(source).content);
   });
 
   it("can replace the Markdown body without reformatting Front Matter", () => {

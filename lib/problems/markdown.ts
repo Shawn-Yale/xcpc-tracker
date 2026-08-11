@@ -26,6 +26,8 @@ const editableFields = new Set<string>([
   "rating",
   "solvedAt",
   "durationMinutes",
+  "solutionLanguage",
+  "solutionCode",
   "status",
   "knowledge",
   "tags",

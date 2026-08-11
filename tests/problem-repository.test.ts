@@ -192,6 +192,145 @@ body
 });
 
 describe("ProblemRepository writes", () => {
+  it("creates and reloads a problem with an exact solution", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    const problem = makeProblem("solution-create");
+    const specialLine = [
+      "// 区间最小值",
+      "<",
+      ">",
+      "&",
+      '"',
+      "'",
+      "`",
+      "{",
+      "}",
+      "#",
+      "\\",
+      "```",
+    ].join(" ");
+    const code = [
+      "#include <bits/stdc++.h>",
+      specialLine,
+      "int main() {",
+      "\treturn 0;",
+      "}",
+      "",
+    ].join("\n");
+    problem.frontmatter = problemFrontmatterSchema.parse({
+      ...problem.frontmatter,
+      solutionLanguage: "GNU++17",
+      solutionCode: code,
+    });
+
+    await repository.create(problem);
+    const reloaded = await new ProblemRepository(directory).findById(
+      "solution-create",
+    );
+
+    expect(reloaded?.frontmatter.solutionLanguage).toBe("GNU++17");
+    expect(reloaded?.frontmatter.solutionCode).toBe(code);
+  });
+
+  it("adds and updates a long solution without changing other durable data", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    await repository.create(makeProblem("solution-update"));
+    const code = `\n\t// 中文注释\nconst char* data = "${"<>&#{}\\".repeat(90)}";\n`;
+
+    await repository.update("solution-update", {
+      frontmatter: {
+        solutionLanguage: "  Some Future Compiler 99  ",
+        solutionCode: code,
+      },
+    });
+    const reloaded = await new ProblemRepository(directory).findById(
+      "solution-update",
+    );
+
+    expect(reloaded?.frontmatter.solutionLanguage).toBe(
+      "Some Future Compiler 99",
+    );
+    expect(reloaded?.frontmatter.solutionCode).toBe(code);
+    expect(reloaded?.frontmatter.reviews).toHaveLength(1);
+    expect(reloaded?.frontmatter.futureField).toBe("keep-me");
+    expect(reloaded?.content).toBe(makeProblem("solution-update").content);
+  });
+
+  it("clears and reloads an existing solution as a null pair", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    const problem = makeProblem("solution-clear");
+    problem.frontmatter = problemFrontmatterSchema.parse({
+      ...problem.frontmatter,
+      solutionLanguage: "C++20",
+      solutionCode: "int main() {}\n",
+    });
+    await repository.create(problem);
+
+    await repository.update("solution-clear", {
+      frontmatter: { solutionLanguage: null, solutionCode: null },
+    });
+    const reloaded = await new ProblemRepository(directory).findById(
+      "solution-clear",
+    );
+
+    expect(reloaded?.frontmatter.solutionLanguage).toBeNull();
+    expect(reloaded?.frontmatter.solutionCode).toBeNull();
+    const persisted = await readFile(
+      path.join(directory, "solution-clear.md"),
+      "utf8",
+    );
+    expect(persisted).not.toContain('solutionLanguage: ""');
+    expect(persisted).not.toContain('solutionCode: ""');
+  });
+
+  it("rejects an invalid solution half-pair without altering the file", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    await repository.create(makeProblem("solution-invalid"));
+    const filePath = path.join(directory, "solution-invalid.md");
+    const before = await readFile(filePath, "utf8");
+
+    await expect(
+      repository.update("solution-invalid", {
+        frontmatter: { solutionLanguage: "C++17", solutionCode: null },
+      }),
+    ).rejects.toThrow("solutionCode");
+    await expect(
+      repository.update("solution-invalid", {
+        frontmatter: {
+          solutionLanguage: null,
+          solutionCode: "int main() {}",
+        },
+      }),
+    ).rejects.toThrow("solutionLanguage");
+
+    await expect(readFile(filePath, "utf8")).resolves.toBe(before);
+  });
+
+  it.each([
+    ["solutionLanguage", { solutionLanguage: null }],
+    ["solutionCode", { solutionCode: null }],
+  ])(
+    "rejects a single null %s patch without altering an old problem",
+    async (field, frontmatter) => {
+      const directory = await makeDirectory();
+      const repository = new ProblemRepository(directory);
+      const id = `single-null-${field.toLowerCase()}`;
+      await repository.create(makeProblem(id));
+      const filePath = path.join(directory, `${id}.md`);
+      const before = await readFile(filePath, "utf8");
+
+      await expect(repository.update(id, { frontmatter })).rejects.toThrow();
+
+      const after = await readFile(filePath, "utf8");
+      expect(after).toBe(before);
+      expect(after).not.toContain(`${field}: null`);
+    },
+  );
+
   it("creates, updates, and reloads a problem without losing durable data", async () => {
     const directory = await makeDirectory();
     const repository = new ProblemRepository(directory);
