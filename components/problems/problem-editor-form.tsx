@@ -9,6 +9,7 @@ import {
 } from "@/app/problems/actions";
 import { KnowledgeSelector } from "@/components/knowledge/knowledge-selector";
 import { platformValues, type Platform } from "@/config/platforms";
+import { solutionLanguageOptions } from "@/config/solution-languages";
 import { statusMetadata, statusValues } from "@/config/status";
 import {
   generateProblemId,
@@ -100,6 +101,12 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
   }
 
   const fieldErrors = state.fieldErrors ?? {};
+  const initialSolutionLanguage = initial.solutionLanguage ?? "";
+  const hasLegacySolutionLanguage =
+    initialSolutionLanguage !== "" &&
+    !solutionLanguageOptions.some(
+      (option) => option.value === initialSolutionLanguage,
+    );
 
   return (
     <form
@@ -289,16 +296,33 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
           <p className="mt-1 text-sm text-slate-600">记录最终通过的编程语言与完整实现；两项需要同时填写或同时清空。</p>
         </div>
         <div className="mt-5 space-y-5">
-          <label className="block text-sm font-semibold text-slate-800">
-            编程语言
-            <input
-              className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
-              defaultValue={initial.solutionLanguage ?? ""}
+          <div>
+            <label
+              className="block text-sm font-semibold text-slate-800"
+              htmlFor="solution-language"
+            >
+              编程语言
+            </label>
+            <select
+              className="mt-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              defaultValue={initialSolutionLanguage}
+              id="solution-language"
               name="solutionLanguage"
-              placeholder="例如：C++17"
-            />
+            >
+              <option value="">未选择</option>
+              {hasLegacySolutionLanguage ? (
+                <option value={initialSolutionLanguage}>
+                  {initialSolutionLanguage}（当前记录）
+                </option>
+              ) : null}
+              {solutionLanguageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value}
+                </option>
+              ))}
+            </select>
             <FieldError errors={fieldErrors.solutionLanguage} />
-          </label>
+          </div>
           <label className="block text-sm font-semibold text-slate-800">
             代码
             <textarea

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { MarkdownContent } from "@/components/problems/markdown-content";
 import { ReviewDate } from "@/components/problems/review-date";
+import { SolutionCodeBlock } from "@/components/problems/solution-code-block";
 import { StatusBadge } from "@/components/problems/status-badge";
 import { toLocalDateOnly } from "@/lib/date/local-date";
 import {
@@ -207,9 +208,10 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
                     <span className="inline-flex rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
                       {frontmatter.solutionLanguage}
                     </span>
-                    <pre className="mt-3 max-w-full overflow-x-auto rounded-md bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-100 whitespace-pre">
-                      <code>{frontmatter.solutionCode}</code>
-                    </pre>
+                    <SolutionCodeBlock
+                      code={frontmatter.solutionCode}
+                      language={frontmatter.solutionLanguage}
+                    />
                   </div>
                 </details>
               </section>

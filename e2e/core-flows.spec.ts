@@ -116,6 +116,9 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await expect(page.getByLabel("稳定 ID *")).toHaveValue("e2e-dijkstra");
   await expect(page.getByLabel("稳定 ID *")).toHaveAttribute("readonly", "");
   await expect(page.getByLabel("Dijkstra", { exact: true })).toBeChecked();
+  await expect(page.getByLabel("编程语言", { exact: true })).toHaveValue(
+    "C++17",
+  );
 });
 
 test("AC solution disclosure is safe, collapsible, and contained", async ({
@@ -140,6 +143,8 @@ test("AC solution disclosure is safe, collapsible, and contained", async ({
   await expect(disclosure).toHaveAttribute("open", "");
   await expect(language).toBeVisible();
   await expect(codeBlock).toBeVisible();
+  await expect(codeBlock).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  expect(await codeBlock.locator("code > span").count()).toBeGreaterThan(1);
   expect(await codeBlock.textContent()).toBe(expectedSolutionCode);
 
   const overflow = await page.evaluate(() => {
@@ -174,6 +179,33 @@ test("AC solution disclosure is safe, collapsible, and contained", async ({
   ).toHaveCount(0);
 });
 
+test("unknown durable solution languages remain editable and readable", async ({
+  page,
+}) => {
+  await page.goto("/problems/e2e-legacy-solution");
+  const solutionSection = page.locator(
+    'section[aria-labelledby="ac-solution-title"]',
+  );
+  await solutionSection.locator("summary").click();
+  await expect(
+    solutionSection.getByText("C++23", { exact: true }),
+  ).toBeVisible();
+  await expect(solutionSection.locator("pre")).toHaveText(
+    "legacy <script> & </div> ``` code",
+  );
+  await expect(solutionSection.locator("pre")).toHaveCSS(
+    "background-color",
+    "rgb(255, 255, 255)",
+  );
+
+  await page.goto("/problems/e2e-legacy-solution/edit");
+  const languageSelect = page.getByLabel("编程语言", { exact: true });
+  await expect(languageSelect).toHaveValue("C++23");
+  await expect(
+    languageSelect.locator('option[value="C++23"]'),
+  ).toHaveText("C++23（当前记录）");
+});
+
 test("create form exposes safe client-side interactions", async ({ page }) => {
   await page.goto("/problems/new");
   await expect(page.getByRole("heading", { level: 1, name: "新增题目" })).toBeVisible();
@@ -189,6 +221,19 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
   await page.getByLabel("搜索知识点").fill("Bellman");
   await page.getByLabel("Bellman–Ford", { exact: true }).check();
   await expect(page.getByText("图论 / 最短路 / Bellman–Ford")).toBeVisible();
+
+  const languageSelect = page.getByLabel("编程语言", { exact: true });
+  await expect(languageSelect).toHaveAttribute("name", "solutionLanguage");
+  await expect(languageSelect).toHaveValue("");
+  await expect(languageSelect.locator("option")).toHaveText([
+    "未选择",
+    "C",
+    "C++11",
+    "C++14",
+    "C++17",
+    "C++20",
+    "Python 3",
+  ]);
 });
 
 test("hierarchical Knowledge navigation resolves canonical paths", async ({ page }) => {
