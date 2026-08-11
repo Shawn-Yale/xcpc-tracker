@@ -4,7 +4,7 @@ The root route is the daily entry point for local training. It reads the same re
 
 ## Priority Queue
 
-The first viewport shows Overdue, Today, and the next seven calendar days. Overdue and Today lists reuse the shared Review queue, including original planned dates, overdue-day calculations, status, rating, and knowledge categories. Visiting the Dashboard never advances a Review date.
+The first viewport shows Overdue, Today, and the next seven calendar days. Overdue and Today lists reuse the shared Review queue, including original planned dates, overdue-day calculations, status, rating, and human-readable Knowledge breadcrumbs derived from the production catalog. Visiting the Dashboard never advances a Review date.
 
 ## Progress and Backlog
 

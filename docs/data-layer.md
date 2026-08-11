@@ -10,6 +10,8 @@
 
 Invalid YAML, invalid Schema fields, filename/ID mismatches, and duplicate IDs are reported per file. They do not prevent unrelated valid records from loading.
 
+The Problem schema requires an explicit `knowledge: KnowledgeId[]`. IDs are validated against the production taxonomy and its selection rules. `knowledge: []` is valid, while any legacy `categories` key is a per-file validation error. An absent or empty `data/problems/` directory is a valid production state and returns an empty Problem collection.
+
 ## Write API
 
 - `create(problem)` validates the complete document and refuses to replace an existing ID.
@@ -17,7 +19,7 @@ Invalid YAML, invalid Schema fields, filename/ID mismatches, and duplicate IDs a
 - Writes are prepared in a same-directory temporary file, flushed, and then installed atomically. A failed validation occurs before replacement.
 - Existing YAML nodes are reused during update, preserving unknown fields, comments, field order, Review History, and unchanged Markdown content.
 
-Review History will receive a dedicated append operation in the Review milestone; it is deliberately unavailable through the general update API.
+Review completion uses the repository's dedicated append workflow; Review History remains deliberately unavailable through the general update API.
 
 ## Performance Check
 
