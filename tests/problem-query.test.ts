@@ -1,6 +1,4 @@
-import path from "node:path";
-
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { dateOnlySchema } from "@/lib/date/date-only";
 import {
@@ -8,30 +6,25 @@ import {
   queryProblems,
   type ProblemQuery,
 } from "@/lib/problems/query";
-import { ProblemRepository } from "@/lib/problems/repository";
-import type { ProblemFile } from "@/lib/problems/types";
+
+import { createProblemFileFixtures } from "./fixtures/problem-files";
+
+function validKnowledgeFilter(id: string): ProblemQuery["knowledge"] {
+  const filter = parseProblemQuery({ knowledge: id }).knowledge;
+  if (filter.state !== "valid") throw new Error(`Invalid test knowledge ID: ${id}`);
+  return filter;
+}
 
 const today = dateOnlySchema.parse("2026-08-10");
 const defaults: ProblemQuery = {
   search: "",
   status: "all",
-  category: "all",
+  knowledge: { state: "none" },
   platform: "all",
   review: "all",
   sort: "solvedAt",
   direction: "desc",
 };
-
-let problems: ProblemFile[];
-
-beforeAll(async () => {
-  const repository = new ProblemRepository(
-    path.join(process.cwd(), "data", "problems"),
-  );
-  const result = await repository.loadAll();
-  expect(result.errors).toEqual([]);
-  problems = result.problems;
-});
 
 describe("problem query parsing", () => {
   it("normalizes valid URL parameters", () => {
@@ -39,7 +32,7 @@ describe("problem query parsing", () => {
       parseProblemQuery({
         search: "  DP  ",
         status: "C",
-        category: "动态规划",
+        knowledge: "dynamic-programming.linear",
         platform: "Codeforces",
         review: "scheduled",
         sort: "rating",
@@ -48,7 +41,7 @@ describe("problem query parsing", () => {
     ).toEqual({
       search: "DP",
       status: "C",
-      category: "动态规划",
+      knowledge: { state: "valid", id: "dynamic-programming.linear" },
       platform: "Codeforces",
       review: "scheduled",
       sort: "rating",
@@ -56,77 +49,108 @@ describe("problem query parsing", () => {
     });
   });
 
-  it("falls back safely for unsupported values", () => {
+  it("keeps unrelated unsupported values safe while exposing an invalid knowledge filter", () => {
     expect(
       parseProblemQuery({
         status: "E",
-        category: "unknown",
+        knowledge: "unknown",
         platform: "unknown",
         review: "later",
         sort: "title",
         direction: "sideways",
       }),
-    ).toEqual(defaults);
+    ).toEqual({
+      ...defaults,
+      knowledge: { state: "invalid", rawValue: "unknown", reason: "unknown-id" },
+    });
+  });
+
+  it("accepts selectable and non-selectable knowledge nodes", () => {
+    expect(parseProblemQuery({ knowledge: "graph.shortest-path.dijkstra" }).knowledge)
+      .toEqual({ state: "valid", id: "graph.shortest-path.dijkstra" });
+    expect(parseProblemQuery({ knowledge: "graph" }).knowledge)
+      .toEqual({ state: "valid", id: "graph" });
+  });
+
+  it.each([
+    [{ knowledge: "Graph!" }, "malformed-id"],
+    [{ knowledge: ["graph", "math"] as string[] }, "multiple-values"],
+    [{ category: "图论" }, "legacy-category"],
+    [{ category: "图论", knowledge: "graph" }, "legacy-category"],
+  ] as const)("marks invalid taxonomy parameters", (parameters, reason) => {
+    expect(parseProblemQuery(parameters).knowledge).toMatchObject({ state: "invalid", reason });
   });
 });
 
 describe("problem search and filters", () => {
   it.each([
-    ["frog", ["atcoder-dp-a"]],
-    ["round 260", ["codeforces-455-a"]],
-    ["最短路", ["atcoder-abc168-d", "codeforces-20-c"]],
+    ["frog", ["fixture-frog-dp"]],
+    ["round 260", ["fixture-boredom-dp"]],
+    ["最短路", ["fixture-graph-gap", "fixture-shortest-path"]],
   ])("partially searches title, contest, problem, and tags with %s", (search, ids) => {
-    const result = queryProblems(problems, { ...defaults, search }, today);
+    const result = queryProblems(
+      createProblemFileFixtures(),
+      { ...defaults, search },
+      today,
+    );
     expect(result.map((problem) => problem.frontmatter.id)).toEqual(ids);
   });
 
-  it("combines status, category, and platform filters", () => {
+  it("combines status, knowledge, and platform filters", () => {
     const result = queryProblems(
-      problems,
+      createProblemFileFixtures(),
       {
         ...defaults,
         status: "C",
-        category: "贪心、构造与不变量",
+        knowledge: validKnowledgeFilter("greedy-constructive.greedy"),
         platform: "AtCoder",
       },
       today,
     );
 
     expect(result.map((problem) => problem.frontmatter.id)).toEqual([
-      "atcoder-abc088-b",
+      "fixture-greedy-game",
     ]);
   });
 
-  it("includes a multi-category problem in every matching category", () => {
+  it("matches direct selections and descendants for parent filters without duplicates", () => {
     const graphIds = queryProblems(
-      problems,
-      { ...defaults, category: "图论" },
+      createProblemFileFixtures(),
+      { ...defaults, knowledge: validKnowledgeFilter("graph") },
       today,
     ).map((problem) => problem.frontmatter.id);
     const dataStructureIds = queryProblems(
-      problems,
-      { ...defaults, category: "数据结构" },
+      createProblemFileFixtures(),
+      { ...defaults, knowledge: validKnowledgeFilter("data-structure") },
       today,
     ).map((problem) => problem.frontmatter.id);
 
-    expect(graphIds).toContain("codeforces-20-c");
-    expect(dataStructureIds).toContain("codeforces-20-c");
+    expect(graphIds).toContain("fixture-shortest-path");
+    expect(dataStructureIds).toContain("fixture-shortest-path");
+    expect(new Set(graphIds).size).toBe(graphIds.length);
+  });
+
+  it("returns no Problems for an invalid filter", () => {
+    expect(queryProblems(createProblemFileFixtures(), {
+      ...defaults,
+      knowledge: { state: "invalid", rawValue: "unknown", reason: "unknown-id" },
+    }, today)).toEqual([]);
   });
 
   it.each([
-    ["due", ["codeforces-20-c"]],
-    ["overdue", ["codeforces-20-c"]],
-    ["scheduled", ["atcoder-abc168-d", "codeforces-455-a"]],
+    ["due", ["fixture-shortest-path"]],
+    ["overdue", ["fixture-shortest-path"]],
+    ["scheduled", ["fixture-graph-gap", "fixture-boredom-dp"]],
     ["none", [
-      "atcoder-abc088-b",
-      "atcoder-abc081-b",
-      "atcoder-dp-a",
-      "codeforces-71-a",
-      "codeforces-4-a",
+      "fixture-greedy-game",
+      "fixture-math-bitwise",
+      "fixture-frog-dp",
+      "fixture-string-basic",
+      "fixture-math-basic",
     ]],
   ] as const)("filters %s Review records", (review, expectedIds) => {
     const result = queryProblems(
-      problems,
+      createProblemFileFixtures(),
       { ...defaults, review },
       today,
     );
@@ -137,7 +161,7 @@ describe("problem search and filters", () => {
 describe("problem sorting", () => {
   it("sorts rating descending while keeping missing values last", () => {
     const result = queryProblems(
-      problems,
+      createProblemFileFixtures(),
       { ...defaults, sort: "rating", direction: "desc" },
       today,
     );
@@ -149,7 +173,7 @@ describe("problem sorting", () => {
 
   it("sorts Review dates ascending while keeping unscheduled records last", () => {
     const result = queryProblems(
-      problems,
+      createProblemFileFixtures(),
       { ...defaults, sort: "nextReviewDate", direction: "asc" },
       today,
     );

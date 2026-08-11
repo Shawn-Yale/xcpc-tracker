@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { DateOnly } from "@/lib/date/date-only";
+import { getKnowledgeBreadcrumb } from "@/lib/knowledge/presentation";
 import { getMarkdownExcerpt } from "@/lib/problems/markdown-sections";
 import type { ProblemFile } from "@/lib/problems/types";
 
@@ -38,12 +39,12 @@ export function KnowledgeGapList({
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {problem.frontmatter.categories.map((category) => (
+                  {problem.frontmatter.knowledge.map((id) => (
                     <span
                       className="rounded bg-sky-50 px-2 py-1 text-xs font-medium text-sky-800"
-                      key={category}
+                      key={id}
                     >
-                      {category}
+                      {getKnowledgeBreadcrumb(id)}
                     </span>
                   ))}
                   {problem.frontmatter.tags.map((tag) => (

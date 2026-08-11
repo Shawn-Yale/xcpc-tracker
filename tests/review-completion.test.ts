@@ -14,7 +14,7 @@ function makeProblem() {
     platform: "Codeforces",
     solvedAt: "2026-07-01",
     status: "C",
-    categories: ["图论"],
+    knowledge: ["graph.shortest-path.dijkstra"],
     tags: [],
     nextReviewDate: "2026-08-10",
     reviewIntervalDays: 7,

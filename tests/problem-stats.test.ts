@@ -1,30 +1,26 @@
-import path from "node:path";
+import { describe, expect, it } from "vitest";
 
-import { beforeAll, describe, expect, it } from "vitest";
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
+import { getKnowledgeEntry } from "@/lib/knowledge/catalog";
 
-import { categoryMetadata, categoryValues, getCategoryBySlug } from "@/config/categories";
-import { ProblemRepository } from "@/lib/problems/repository";
-import type { ProblemFile } from "@/lib/problems/types";
 import {
-  getCategoryStats,
+  getKnowledgeStats,
   getProblemStats,
   getStatusStats,
   getTagCounts,
 } from "@/lib/statistics/problem-stats";
 
-let problems: ProblemFile[];
+import { createProblemFileFixtures } from "./fixtures/problem-files";
 
-beforeAll(async () => {
-  const result = await new ProblemRepository(
-    path.join(process.cwd(), "data", "problems"),
-  ).loadAll();
-  expect(result.errors).toEqual([]);
-  problems = result.problems;
-});
+function knowledgeId(value: string) {
+  const entry = getKnowledgeEntry(knowledgeCatalog, value);
+  if (!entry) throw new Error(`Invalid test knowledge ID: ${value}`);
+  return entry.id;
+}
 
 describe("problem mastery statistics", () => {
-  it("calculates global counts without duplicating multi-category problems", () => {
-    expect(getProblemStats(problems)).toEqual({
+  it("calculates global counts without duplicating multi-knowledge problems", () => {
+    expect(getProblemStats(createProblemFileFixtures())).toEqual({
       total: 8,
       statusCounts: { A: 2, B: 3, C: 2, D: 1 },
       mastered: 5,
@@ -42,7 +38,7 @@ describe("problem mastery statistics", () => {
   });
 
   it("produces direct A/B/C/D pool counts", () => {
-    expect(getStatusStats(problems)).toEqual([
+    expect(getStatusStats(createProblemFileFixtures())).toEqual([
       { status: "A", count: 2 },
       { status: "B", count: 3 },
       { status: "C", count: 2 },
@@ -52,40 +48,33 @@ describe("problem mastery statistics", () => {
 });
 
 describe("knowledge aggregation", () => {
-  it("counts one problem in every category it belongs to", () => {
+  it("provides direct and Problem-deduplicated ancestor rollup statistics", () => {
     const stats = new Map(
-      getCategoryStats(problems).map((categoryStats) => [
-        categoryStats.category,
-        categoryStats,
+      getKnowledgeStats(createProblemFileFixtures()).map((knowledgeStats) => [
+        knowledgeStats.id,
+        knowledgeStats,
       ]),
     );
 
-    expect(stats.get("图论")?.total).toBe(2);
-    expect(stats.get("数据结构")?.total).toBe(1);
-    expect(stats.get("动态规划")).toMatchObject({
+    expect(stats.get(knowledgeId("graph"))?.direct.total).toBe(0);
+    expect(stats.get(knowledgeId("graph"))?.rollup.total).toBe(2);
+    expect(stats.get(knowledgeId("graph.shortest-path"))?.direct.total).toBe(1);
+    expect(stats.get(knowledgeId("graph.shortest-path"))?.rollup.total).toBe(2);
+    expect(stats.get(knowledgeId("data-structure"))?.rollup.total).toBe(1);
+    expect(stats.get(knowledgeId("dynamic-programming.linear"))?.direct).toMatchObject({
       total: 2,
       statusCounts: { A: 1, B: 0, C: 1, D: 0 },
       mastered: 1,
       masteryRate: 50,
     });
-    expect(stats.get("计算几何")).toMatchObject({ total: 0, masteryRate: 0 });
+    expect(stats.get(knowledgeId("computational-geometry"))?.rollup).toMatchObject({ total: 0, masteryRate: 0 });
   });
 
   it("aggregates flat tags in count and name order", () => {
-    const tags = getTagCounts(problems);
+    const tags = getTagCounts(createProblemFileFixtures());
 
     expect(tags).toContainEqual({ tag: "Dijkstra", count: 1 });
     expect(tags).toContainEqual({ tag: "线性 DP", count: 2 });
     expect(tags[0]).toEqual({ tag: "线性 DP", count: 2 });
-  });
-
-  it("keeps every category slug unique and reversible", () => {
-    const slugs = categoryValues.map((category) => categoryMetadata[category].slug);
-
-    expect(new Set(slugs).size).toBe(categoryValues.length);
-    for (const category of categoryValues) {
-      expect(getCategoryBySlug(categoryMetadata[category].slug)).toBe(category);
-    }
-    expect(getCategoryBySlug("not-a-category")).toBeUndefined();
   });
 });

@@ -14,8 +14,8 @@ title: Watermelon
 platform: Codeforces
 solvedAt: "2026-07-01"
 status: A
-categories:
-  - 数学与数论
+knowledge:
+  - math.number-theory
 tags: []
 reviews: []
 futureField: keep-me
@@ -31,7 +31,7 @@ describe("problem Markdown parsing", () => {
     const problem = parseProblemMarkdown(source);
 
     expect(problem.frontmatter.id).toBe("codeforces-4-a");
-    expect(problem.frontmatter.categories).toEqual(["数学与数论"]);
+    expect(problem.frontmatter.knowledge).toEqual(["math.number-theory"]);
     expect(problem.frontmatter.futureField).toBe("keep-me");
     expect(problem.content).toContain("# 题意抽象");
   });
@@ -45,9 +45,20 @@ describe("problem Markdown parsing", () => {
     ).toThrow(SyntaxError);
     expect(() =>
       parseProblemMarkdown(
-        "---\nid: invalid\ntitle: Test\nplatform: Codeforces\nsolvedAt: 2026-02-30\nstatus: A\n---\nbody",
+        "---\nid: invalid\ntitle: Test\nplatform: Codeforces\nsolvedAt: 2026-02-30\nstatus: A\nknowledge: []\n---\nbody",
       ),
     ).toThrow("solvedAt");
+  });
+
+  it("rejects legacy categories even when knowledge is also present", () => {
+    const legacySource = source.replace(
+      "knowledge:\n  - math.number-theory",
+      "knowledge: []\ncategories: []",
+    );
+
+    expect(() => parseProblemMarkdown(legacySource)).toThrow(
+      "Legacy categories is not supported",
+    );
   });
 });
 
@@ -60,14 +71,34 @@ describe("problem Markdown serialization", () => {
         platform: "AtCoder",
         solvedAt: "2026-07-02",
         status: "A",
+        knowledge: [],
       },
       "\n# 正确思路\n\n使用一维 DP。\n",
     );
     const parsed = parseProblemMarkdown(serialized);
 
     expect(parsed.frontmatter.id).toBe("atcoder-dp-a");
+    expect(parsed.frontmatter.knowledge).toEqual([]);
     expect(parsed.frontmatter.reviews).toEqual([]);
     expect(parsed.content).toContain("使用一维 DP");
+    expect(serialized).toContain("knowledge: []");
+    expect(serialized).not.toContain("categories:");
+  });
+
+  it("updates knowledge while preserving unrelated unknown fields", () => {
+    const updated = updateProblemMarkdown(source, {
+      frontmatter: {
+        knowledge: ["math.combinatorics.inclusion-exclusion"],
+      },
+    });
+    const parsed = parseProblemMarkdown(updated);
+
+    expect(parsed.frontmatter.knowledge).toEqual([
+      "math.combinatorics.inclusion-exclusion",
+    ]);
+    expect(parsed.frontmatter.futureField).toBe("keep-me");
+    expect(updated).toContain("futureField: keep-me");
+    expect(updated).not.toContain("categories:");
   });
 
   it("updates only requested fields and retains history, unknown data, comments, and body", () => {

@@ -9,7 +9,8 @@ The create form suggests a kebab-case ID from platform, contest, and problem num
 ## Form Normalization
 
 - Required fields are title, platform, solved date, and status.
-- Categories come from `config/categories.ts` and support multiple selections.
+- Knowledge options come from the hierarchical production taxonomy. The selector groups Domain → Topic → Technique, renders non-selectable nodes as structure, submits stable `KnowledgeId` values, supports search and multiple selections, and prevents ancestor/descendant conflicts. An empty selection writes `knowledge: []`.
+- Tags remain independent free text; they are not taxonomy selections.
 - Tags may be separated by commas, Chinese commas, or new lines. Whitespace and duplicate values are removed.
 - Rating, duration, and Review intervals must be positive integers when supplied.
 - Review date and interval are enabled and validated as a pair.

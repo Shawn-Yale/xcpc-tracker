@@ -1,14 +1,22 @@
-import Link from "next/link";
+"use client";
 
-import { categoryValues } from "@/config/categories";
+import Link from "next/link";
+import { useState } from "react";
+
 import { platformValues } from "@/config/platforms";
 import { statusValues } from "@/config/status";
+import type { KnowledgeId } from "@/lib/knowledge/types";
 import type { ProblemQuery } from "@/lib/problems/query";
+
+import { KnowledgeFilterCombobox } from "./knowledge-filter-combobox";
 
 const fieldClassName =
   "mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15";
 
 export function ProblemFilters({ query }: { query: ProblemQuery }) {
+  const [knowledge, setKnowledge] = useState<KnowledgeId | "">(
+    query.knowledge.state === "valid" ? query.knowledge.id : "",
+  );
   return (
     <form
       action="/problems"
@@ -43,23 +51,12 @@ export function ProblemFilters({ query }: { query: ProblemQuery }) {
           </select>
         </label>
 
-        <label>
+        <div>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-            分类
+            知识点
           </span>
-          <select
-            className={fieldClassName}
-            defaultValue={query.category}
-            name="category"
-          >
-            <option value="all">全部分类</option>
-            {categoryValues.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </label>
+          <KnowledgeFilterCombobox onChange={setKnowledge} value={knowledge} />
+        </div>
 
         <label>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">

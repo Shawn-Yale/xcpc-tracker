@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ReviewDate } from "@/components/problems/review-date";
 import { StatusBadge } from "@/components/problems/status-badge";
 import type { DateOnly } from "@/lib/date/date-only";
+import { getKnowledgeNames } from "@/lib/knowledge/presentation";
 import type { ProblemFile } from "@/lib/problems/types";
 
 export function BacklogList({ problems, today }: { problems: readonly ProblemFile[]; today: DateOnly }) {
@@ -25,7 +26,7 @@ export function BacklogList({ problems, today }: { problems: readonly ProblemFil
               <Link className="truncate font-semibold text-slate-950 hover:text-sky-800 hover:underline" href={`/problems/${frontmatter.id}`}>{frontmatter.title}</Link>
             </div>
             <p className="mt-2 truncate text-xs text-slate-500">
-              {frontmatter.categories.length > 0 ? frontmatter.categories.join(" / ") : "未分类"}
+              {frontmatter.knowledge.length > 0 ? getKnowledgeNames(frontmatter.knowledge).join(" · ") : "未分类"}
               {frontmatter.tags.length > 0 ? ` · ${frontmatter.tags.join(" / ")}` : ""}
             </p>
           </div>

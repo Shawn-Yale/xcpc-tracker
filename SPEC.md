@@ -23,7 +23,7 @@ XCPC Tracker 是一个面向算法竞赛训练的个人做题管理系统，用�
 其核心目标是回答以下问题：
 
 1. 我做过哪些题？
-2. 每道题属于哪些知识类别？
+2. 每道题显式选择了哪些 Knowledge 节点？
 3. 我是否真正掌握了这道题？
 4. 哪些题目需要重新做？
 5. 哪些知识点是我的薄弱项？
@@ -51,7 +51,7 @@ XCPC Tracker 应帮助用户建立长期、可靠、可回顾的算法训练档�
 - 安排未来重做；
 - 自动显示今天和已经逾期的重做任务；
 - 保留完整重做历史；
-- 分析不同知识类别的掌握情况；
+- 分析不同 Knowledge 节点的掌握情况；
 - 分析 C/D 题向 A/B 题的转化情况；
 - 使用 Git 保存所有训练数据的历史版本。
 
@@ -449,54 +449,51 @@ mastered = status === A || status === B
 
 # 13. 知识分类系统
 
-每道题允许属于 **多个知识类别**。
+每道题必须显式保存一个 `knowledge` 数组，并允许选择 **多个知识节点**。
 
 字段：
 
 ```yaml
-categories:
+knowledge:
+  - graph.shortest-path.dijkstra
+  - data-structure.heap
 ```
 
-例如：
+Problem 只持久化来自 Frozen XCPC Production Taxonomy V1 的稳定 `KnowledgeId`，不保存中文显示名，也不要求同时保存父节点。`knowledge: []` 合法，表示尚未分类；字段本身不得缺失。
 
-```yaml
-categories:
-  - 动态规划
-  - 数据结构
-```
+每个 ID 必须存在、对应显式 `selectable: true` 的节点、不得重复，也不得同时选择 ancestor 与 descendant。Sibling 与 cross-branch 多选合法。Legacy `categories` key 明确非法，不提供迁移、fallback、alias 或 dual write。
 
 ---
 
-# 14. 一级知识分类
+# 14. Knowledge Taxonomy V1
 
-MVP 默认提供以下一级分类：
-
-1. 动态规划
-2. 图论
-3. 数据结构
-4. 数学与数论
-5. 贪心、构造与不变量
-6. 字符串
-7. 位运算与状态压缩
-8. 计算几何
-
-系统设计必须允许未来新增一级分类。
-
-不得将一级分类硬编码到大量业务组件中。
-
-应集中维护。
-
-例如：
+Taxonomy 是独立且唯一的知识真值源，runtime definition 位于：
 
 ```text
-config/categories.ts
+config/knowledge-taxonomy.ts
 ```
+
+层级最多三级：
+
+```text
+Domain → Topic → Technique
+```
+
+但节点不强制恰好三层。每个节点显式定义 `id`、`name`、`selectable`，并可定义 `description` 与 `children`；selectable 不得根据 children 自动推导。
+
+V1 包含以下十个 Domain：
+
+```text
+通用算法技巧、搜索、数据结构、图论、动态规划、贪心、构造与不变量、数学、位运算与状态表示、字符串算法、计算几何
+```
+
+中文名称和 description 可以修改而不改变 ID。正式 KnowledgeId 不得随意 reparent；semantic rename 或 reparent 属于 breaking taxonomy change，删除后的 ID 不得复用。
 
 ---
 
 # 15. Tags 系统
 
-除 categories 外，每道题支持任意数量的细粒度 tags。
+除受控的 `knowledge` 外，每道题支持任意数量的自由文本 tags。
 
 例如：
 
@@ -516,14 +513,14 @@ tags:
   - 二分图
 ```
 
-Tags 用于描述更加具体的知识点。
+Tags 用于描述非正式技巧、题目特点、易错点等不适合成为稳定 taxonomy node 的信息。
 
 原则：
 
 ```text
-categories = 大类
+knowledge = 受控、稳定、可统计和筛选的算法知识 ID
 
-tags = 具体算法 / 思维 / 技巧
+tags = 独立自由文本，不参与 taxonomy schema，也不自动转换为 knowledge
 ```
 
 ---
@@ -808,9 +805,9 @@ durationMinutes: 120
 
 status: C
 
-categories:
-  - 图论
-  - 位运算与状态压缩
+knowledge:
+  - graph.shortest-path.dijkstra
+  - bitwise.xor.xor-linear-basis
 
 tags:
   - XOR
@@ -992,7 +989,7 @@ Problems 页面用于浏览全部题目。
 - Rating；
 - Solved Date；
 - Status；
-- Categories；
+- Knowledge；
 - Tags；
 - Next Review。
 
@@ -1024,9 +1021,11 @@ C
 D
 ```
 
-### Category
+### Knowledge
 
-八大一级分类。
+单个 `?knowledge=<KnowledgeId>`。已存在的 selectable 或 non-selectable 节点都可以作为合法筛选；父节点匹配直接选择它或任意 descendant 的题目，每题只返回一次。
+
+无参数表示无 Knowledge 筛选。Unknown、malformed、多个 `knowledge` values、legacy `?category=`，以及同时存在 `category` 与 `knowledge` 都进入显式 invalid state；不得静默显示全部题目。自由文本搜索仍只覆盖 title、contest、problem 与 tags，不自动搜索 Knowledge。
 
 ### Platform
 
@@ -1073,31 +1072,25 @@ Review 次数
 
 # 38. Knowledge 页面
 
-Knowledge 页面按照算法知识体系浏览题目。
-
-首页显示所有一级分类。
-
-例如：
-
-```text
-动态规划
-图论
-数据结构
-数学与数论
-贪心、构造与不变量
-字符串
-位运算与状态压缩
-计算几何
-```
+Knowledge 页面按照 Frozen production taxonomy 浏览题目。首页显示十个 Domain 及其 rollup statistics，不平铺全部节点。
 
 ---
 
-# 39. Knowledge Category 页面
+# 39. Knowledge Node 页面
 
-点击某一个分类后显示：
+节点使用从 dotted KnowledgeId 推导的层级 URL：
 
 ```text
-题目总数
+/knowledge/graph
+/knowledge/graph/shortest-path
+/knowledge/graph/shortest-path/dijkstra
+```
+
+页面的 breadcrumb、title、description、children 与链接均来自 production catalog；非法路径返回 404。节点页显示：
+
+```text
+Direct 题目数
+Rollup 题目数
 A 数量
 B 数量
 C 数量
@@ -1106,31 +1099,13 @@ Mastered
 Mastery Rate
 ```
 
-以及该分类下全部题目。
+以及该节点和 descendants 下按 Problem 去重后的全部题目，并可下钻到 `/problems?knowledge=<KnowledgeId>`。
 
 ---
 
 # 40. Tags
 
-Knowledge 页面应能够进一步查看 Tags。
-
-例如：
-
-```text
-动态规划
-
-状压 DP
-树形 DP
-数位 DP
-概率 DP
-区间 DP
-DP 优化
-...
-```
-
-Tag 不需要在 MVP 中形成严格树结构。
-
-可以先作为扁平标签存在。
+Tags 始终保持独立自由文本，不形成 taxonomy 树，也不作为 Knowledge 节点的别名或后备分类。
 
 ---
 
@@ -1191,7 +1166,7 @@ D 页面被视为：
 
 D 页面需要重点展示：
 
-- Category；
+- Knowledge；
 - Tags；
 - 做题感想；
 - 错误原因；
@@ -1318,7 +1293,7 @@ MVP 必须允许本地编辑题目。
 - solvedAt；
 - duration；
 - status；
-- categories；
+- knowledge；
 - tags；
 - Markdown 正文；
 - nextReviewDate；
@@ -1348,7 +1323,7 @@ Status
 ```text
 URL
 Rating
-Categories
+Knowledge
 Tags
 Review
 ```
@@ -1390,7 +1365,14 @@ D
 
 # 57. Knowledge Mastery
 
-每个 Category 统计：
+每个 Knowledge node 统计两套口径：
+
+```text
+direct
+rollup
+```
+
+`direct` 只统计 Problem 显式选择该 ID 的情况；`rollup` 统计 node itself 与全部 descendants。同一道 Problem 在同一 rollup node 下最多计一次，不得通过 child counts 简单求和。两套口径均包含：
 
 ```text
 Total
@@ -1490,11 +1472,11 @@ MVP 可以先实现基础版本。
 D 状态题应该可以按照：
 
 ```text
-Category
+Knowledge
 Tag
 ```
 
-聚合。
+聚合。Knowledge Gap ranking 只使用每道 D Problem 显式保存的 direct `knowledge[]`，不得自动将 ancestors 计入排名；同一 Problem 的每个直接 ID 最多贡献 1。`knowledge: []` 的 D Problem 单独统计为未分类。
 
 目的是发现例如：
 
@@ -1576,7 +1558,9 @@ C
 D
 ```
 
-categories 必须是数组。
+`knowledge` 必须存在且为数组；每个 ID 必须来自 production taxonomy、显式 selectable、没有重复，也没有 ancestor/descendant 冲突。`knowledge: []` 合法。
+
+任何 legacy `categories` key 都必须 validation failure，即使值为 `[]`、`null`，或与合法 `knowledge` 同时出现。其他无关 unknown fields 仍可保留。
 
 日期必须符合预期格式。
 
@@ -1609,7 +1593,7 @@ reviews 必须是数组。
 ```
 
 ```text
-这个知识类别暂无题目。
+这个知识节点暂无题目。
 ```
 
 不得因为数组为空导致组件错误。
@@ -1817,6 +1801,7 @@ xcpc-tracker/
 │   └── ui/
 │
 ├── lib/
+│   ├── knowledge/
 │   ├── problems/
 │   ├── review/
 │   ├── statistics/
@@ -1826,14 +1811,14 @@ xcpc-tracker/
 │   └── problems/
 │
 ├── config/
-│   ├── categories.ts
+│   ├── knowledge-taxonomy.ts
 │   ├── platforms.ts
 │   └── status.ts
 │
 ├── tests/
 │
 ├── AGENTS.md
-├── SPECIFICATION.md
+├── SPEC.md
 ├── PLAN.md
 ├── README.md
 ├── package.json
@@ -1867,7 +1852,7 @@ isReviewDue()
 isOverdue()
 getOverdueDays()
 getMasteryRate()
-getCategoryStats()
+getKnowledgeStats()
 getStatusDistribution()
 getReviewConversions()
 ```
@@ -1934,7 +1919,7 @@ nextReviewDate == null
 - A/B/C/D；
 - Mastery Rate；
 - 空数据；
-- Category statistics。
+- Knowledge direct / rollup statistics；
 
 ---
 
@@ -2004,7 +1989,7 @@ data/problems/
 - Filters；
 - Sorting；
 - Status；
-- Categories；
+- Knowledge；
 - Tags。
 
 ---
@@ -2014,7 +1999,7 @@ data/problems/
 实现：
 
 - Knowledge 页面；
-- Category 页面；
+- 层级 Knowledge Node 页面；
 - Status 页面；
 - Mastery statistics。
 
@@ -2204,17 +2189,17 @@ Mastery Rate = 50%
 一道题：
 
 ```text
-categories:
-  - 动态规划
-  - 数据结构
+knowledge:
+  - dynamic-programming.linear
+  - data-structure.heap
 ```
 
 则必须同时：
 
-- 出现在动态规划页面；
-- 出现在数据结构页面。
+- 出现在 `dynamic-programming.linear` 的直接范围及其 ancestor rollup 页面；
+- 出现在 `data-structure.heap` 的直接范围及其 ancestor rollup 页面。
 
-不得限制一道题只能属于一个 Category。
+不得限制一道题只能属于一个 Knowledge node；cross-branch 多选合法，但 ancestor 与 descendant 不得同时持久化。
 
 ---
 
@@ -2288,7 +2273,7 @@ MVP 稳定之后可以考虑：
 ## V1.1
 
 - Failure Reasons；
-- 更细的 Knowledge Taxonomy；
+- 经明确 breaking-change review 的 Knowledge Taxonomy 扩展；
 - Calendar；
 - Heatmap；
 - Advanced Statistics。
@@ -2346,7 +2331,7 @@ Codex 在处理本仓库时必须遵守：
 
 ### Rule 2
 
-**一道题可以属于多个 Knowledge Categories 和多个 Tags。**
+**一道题可以显式选择多个 KnowledgeId 和多个自由文本 Tags。**
 
 ### Rule 3
 
@@ -2410,7 +2395,7 @@ Problem Count
 - [ ] 可以读取全部 Markdown；
 - [ ] 支持 A/B/C/D；
 - [ ] 正确计算 Mastered；
-- [ ] 支持多个 Categories；
+- [ ] 支持多个 KnowledgeId；
 - [ ] 支持多个 Tags；
 - [ ] 支持 Problems 搜索；
 - [ ] 支持 Problems Filter；
@@ -2428,7 +2413,7 @@ Problem Count
 - [ ] Dashboard 可以查看逾期任务；
 - [ ] 可以统计 A/B/C/D；
 - [ ] 可以统计 Mastery Rate；
-- [ ] 可以统计各 Knowledge Category 掌握率；
+- [ ] 可以统计各 Knowledge node 的 direct / rollup 掌握率；
 - [ ] 可以统计基础 Review Conversion；
 - [ ] 数据损坏不会导致整站崩溃；
 - [ ] 核心业务逻辑具有自动测试；

@@ -58,11 +58,13 @@ export async function completeReviewAction(
     };
   }
 
+  revalidatePath("/");
   revalidatePath("/review");
   revalidatePath(`/review/${id}`);
   revalidatePath("/problems");
   revalidatePath(`/problems/${id}`);
-  revalidatePath("/status");
-  revalidatePath("/knowledge");
+  revalidatePath("/status", "layout");
+  revalidatePath("/knowledge", "layout");
+  revalidatePath("/statistics");
   redirect(`/review?completed=${encodeURIComponent(id)}`);
 }

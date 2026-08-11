@@ -22,7 +22,7 @@ runPerformanceTest(
           Array.from({ length: batchSize }, (_, offset) => {
             const index = start + offset;
             const id = `fixture-${index.toString().padStart(4, "0")}`;
-            const source = `---\nid: ${id}\ntitle: Fixture ${index}\nplatform: Other\nsolvedAt: "2026-01-01"\nstatus: A\ncategories: []\ntags: []\nreviews: []\n---\nbody\n`;
+            const source = `---\nid: ${id}\ntitle: Fixture ${index}\nplatform: Other\nsolvedAt: "2026-01-01"\nstatus: A\nknowledge: []\ntags: []\nreviews: []\n---\nbody\n`;
             return writeFile(path.join(directory, `${id}.md`), source, "utf8");
           }),
         );

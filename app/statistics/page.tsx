@@ -3,14 +3,16 @@ import Link from "next/link";
 
 import { LoadErrorSummary } from "@/components/problems/load-error-summary";
 import { ActivityHeatmap } from "@/components/statistics/activity-heatmap";
-import { CategoryStatisticsTable } from "@/components/statistics/category-statistics-table";
+import { KnowledgeStatisticsTable } from "@/components/statistics/knowledge-statistics-table";
 import { ConversionPanel } from "@/components/statistics/conversion-panel";
 import { DistributionList } from "@/components/statistics/distribution-list";
 import { RatingTrend } from "@/components/statistics/rating-trend";
 import { StatsStrip } from "@/components/statistics/stats-strip";
-import { categoryMetadata } from "@/config/categories";
+import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import { statusValues } from "@/config/status";
 import { toLocalDateOnly } from "@/lib/date/local-date";
+import { getKnowledgeEntry } from "@/lib/knowledge/catalog";
+import { getKnowledgeHref } from "@/lib/knowledge/routing";
 import { createProblemRepository } from "@/lib/problems/repository";
 import { getStatisticsSummary } from "@/lib/statistics/analysis";
 
@@ -42,14 +44,14 @@ export default async function StatisticsPage() {
         : (summary.overall.statusCounts[status] / summary.overall.total) * 100,
     href: `/status/${status}`,
   }));
-  const dCategoryItems = summary.dKnowledgeGaps.categories.map((item) => ({
-    label: item.category,
+  const dKnowledgeItems = summary.dKnowledgeGaps.knowledge.map((item) => ({
+    label: getKnowledgeEntry(knowledgeCatalog, item.id)?.name ?? item.id,
     count: item.count,
     percentage:
       summary.dKnowledgeGaps.total === 0
         ? 0
         : (item.count / summary.dKnowledgeGaps.total) * 100,
-    href: `/knowledge/${categoryMetadata[item.category].slug}`,
+    href: getKnowledgeHref(item.id),
   }));
   const dTagItems = summary.dKnowledgeGaps.tags.slice(0, 8).map((item) => ({
     label: item.tag,
@@ -124,9 +126,9 @@ export default async function StatisticsPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Knowledge mastery</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-950" id="knowledge-stats-title">分类掌握度</h2>
-              <p className="mt-2 text-sm text-slate-600">多分类题会进入每个相关分类；全局 Total 仍只计算一次。</p>
+              <p className="mt-2 text-sm text-slate-600">Direct 只统计显式选择；Rollup 包含 descendants，并按题目去重。</p>
             </div>
-            <div className="mt-5"><CategoryStatisticsTable rows={summary.categories} /></div>
+            <div className="mt-5"><KnowledgeStatisticsTable rows={summary.knowledge} /></div>
           </section>
 
           <section className="grid gap-10 lg:grid-cols-2" aria-label="Problem distributions">
@@ -165,7 +167,7 @@ export default async function StatisticsPage() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">Current weaknesses</p>
                 <h2 className="mt-1 text-xl font-semibold text-slate-950" id="gaps-title">D 类知识缺口</h2>
-                <p className="mt-2 text-sm text-slate-600">只聚合当前状态为 D 的题；多分类和多标签分别计入相关项。</p>
+                <p className="mt-2 text-sm text-slate-600">只聚合当前状态为 D 的题；Knowledge 仅按显式选择计数，不向 ancestors rollup。</p>
               </div>
               <p className="font-mono text-3xl font-semibold text-rose-800">{summary.dKnowledgeGaps.total}</p>
             </div>
@@ -174,8 +176,8 @@ export default async function StatisticsPage() {
             ) : (
               <div className="mt-5 grid gap-10 lg:grid-cols-2">
                 <div>
-                  <h3 className="font-semibold text-slate-950">Categories</h3>
-                  <div className="mt-4"><DistributionList emptyMessage="D 类题目尚未分类。" items={dCategoryItems} /></div>
+                  <h3 className="font-semibold text-slate-950">Knowledge</h3>
+                  <div className="mt-4"><DistributionList emptyMessage="D 类题目尚未分类。" items={dKnowledgeItems} /></div>
                   {summary.dKnowledgeGaps.unclassified > 0 ? <p className="mt-4 text-xs text-amber-800">另有 {summary.dKnowledgeGaps.unclassified} 道 D 题未分类。</p> : null}
                 </div>
                 <div>

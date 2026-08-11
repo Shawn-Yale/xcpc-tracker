@@ -370,7 +370,14 @@ export class ProblemRepository {
 }
 
 export function createProblemRepository(
-  directory = path.join(process.cwd(), "data", "problems"),
+  directory = defaultProblemDirectory(),
 ): ProblemRepository {
   return new ProblemRepository(directory);
+}
+
+function defaultProblemDirectory(): string {
+  const configuredDirectory = process.env.XCPC_PROBLEMS_DIRECTORY?.trim();
+  return configuredDirectory
+    ? path.resolve(configuredDirectory)
+    : path.join(process.cwd(), "data", "problems");
 }

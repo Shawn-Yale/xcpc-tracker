@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/problems/status-badge";
+import { getKnowledgeBreadcrumb } from "@/lib/knowledge/presentation";
 import type { ProblemFile } from "@/lib/problems/types";
 
 export function RecentSolvedList({ problems }: { problems: readonly ProblemFile[] }) {
@@ -23,8 +24,8 @@ export function RecentSolvedList({ problems }: { problems: readonly ProblemFile[
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <time className="font-mono text-xs text-slate-500" dateTime={frontmatter.solvedAt}>{frontmatter.solvedAt}</time>
-            {frontmatter.categories.slice(0, 2).map((category) => (
-              <span className="rounded bg-sky-50 px-2 py-0.5 text-xs text-sky-800" key={category}>{category}</span>
+            {frontmatter.knowledge.slice(0, 2).map((id) => (
+              <span className="rounded bg-sky-50 px-2 py-0.5 text-xs text-sky-800" key={id}>{getKnowledgeBreadcrumb(id)}</span>
             ))}
           </div>
         </li>

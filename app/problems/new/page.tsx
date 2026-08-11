@@ -24,7 +24,7 @@ export default function NewProblemPage() {
     solvedAt: toLocalDateOnly(new Date()),
     durationMinutes: null,
     status: "C",
-    categories: [],
+    knowledge: [],
     tags: [],
     scheduleReview: false,
     nextReviewDate: null,

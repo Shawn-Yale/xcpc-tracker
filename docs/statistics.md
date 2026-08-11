@@ -6,7 +6,7 @@ The `/statistics` route derives every result from current Problem Front Matter a
 
 - Status distribution counts each valid problem once using its current status.
 - Mastery Rate is `(A + B) / Total`; an empty dataset returns 0%.
-- Category statistics count a multi-category problem in every matching category, while global Total remains one.
+- Every taxonomy node has `direct` statistics for Problems explicitly selecting that ID and `rollup` statistics for the node plus all descendants. Rollup expands each Problem to a unique ancestor set, so sibling selections under one parent never double-count that Problem. Global Total also counts each Problem once.
 - Platform percentages use all valid problems as the denominator.
 - Rating distribution and trend exclude missing ratings. The trend groups records by `solvedAt` and averages ratings on the same day.
 - Last 7 and 30 days include today and use local calendar boundaries. This Year starts on January 1 and excludes future dates.
@@ -19,6 +19,6 @@ The conversion matrix counts every Review transition. C/D conversion rates are p
 
 ## Knowledge Gaps
 
-D gaps include only problems whose current status is D. Each category and tag is counted independently, so percentages can overlap. Unclassified D problems are reported separately.
+D gaps include only problems whose current status is D. Knowledge ranking is direct-only: each explicitly selected `KnowledgeId` contributes at most once per Problem and does not increment ancestors. Tags are counted independently, so percentages can overlap. D Problems with `knowledge: []` are reported separately as unclassified.
 
 All aggregators are pure, deterministic, and accept an explicit local `today` where date windows are required.

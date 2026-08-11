@@ -7,7 +7,7 @@
 开发必须始终保证以下不变量：
 
 - 只有 `A`、`B` 视为 mastered，且不持久化 `mastered` 字段。
-- 一题可拥有多个 categories 和 tags。
+- 一题可拥有多个受控 `KnowledgeId` 和多个独立自由文本 tags；`knowledge: []` 表示尚未分类。
 - `nextReviewDate` 到期后保持原值，只有完成 Review 时才更新或清空。
 - Review 只能追加历史，不能隐式删除或改写旧记录。
 - 单个 Markdown 损坏不得阻断其他题目的读取。
@@ -20,7 +20,8 @@
 ```text
 app/                  # 页面、路由、Server Actions
 components/           # layout、problem、review、statistics、ui
-config/               # categories、platforms、status 的集中配置
+config/               # production knowledge taxonomy、platforms、status 的集中配置
+lib/knowledge/         # taxonomy definition、catalog、routing、selection primitives
 lib/problems/         # schema、读取、写入、查询
 lib/review/           # 到期判断和完成 Review
 lib/statistics/       # 纯统计函数
@@ -54,7 +55,7 @@ tests/                # 跨模块与验收测试
 
 ### 阶段 2：Schema、配置与日期核心
 
-- [x] 在 `config/` 集中维护八大 categories、platforms 和 A/B/C/D 展示元数据。
+- [x] 在 `config/` 维护唯一 production Knowledge Taxonomy tree、platforms 和 A/B/C/D 展示元数据；flat catalog 从 tree 自动派生。
 - [x] 用 Zod 校验 Problem 与 Review；日期使用严格的日历日期校验，而非只匹配正则。
 - [x] 实现 `isMastered`、`isReviewDue`、`isTodayReview`、`isOverdue`、`getOverdueDays`、`addCalendarDays`。
 - [x] 所有日期函数显式接收 `today`，禁止在纯函数内部隐式读取 UTC 时间，确保测试可重复。
@@ -70,31 +71,31 @@ tests/                # 跨模块与验收测试
 - [x] 实现稳定序列化：合并已有 Front Matter，保留未知字段、正文和 reviews；只更新用户实际编辑的字段。
 - [x] 写入前验证 ID 和目标路径，阻止 `..`/路径穿越；使用同目录临时文件加原子替换，失败时不破坏原文件。
 - [x] 提供创建、按 ID 读取、更新的 repository API，并用临时目录做集成测试。
-- [x] 添加 3–5 个覆盖多分类、空 rating、Review 历史和不同状态的示例数据。
+- [x] 使用测试自有 fixtures 覆盖多 Knowledge、空 rating、Review 历史和不同状态；production Problem 目录允许为空。
 
 **验收：** 一个损坏文件产生可定位错误但其他文件正常加载；更新题目不会改变 ID、丢失正文、未知字段或历史；5000 个 fixture 的读取基准处于可交互范围并记录结果。
 
 ### 阶段 4：Problems 题库与详情
 
-- [x] 实现高信息密度 Problems 表格，展示题目、平台、rating、日期、状态、categories、tags 和下一 Review。
+- [x] 实现高信息密度 Problems 表格，展示题目、平台、rating、日期、状态、Knowledge、tags 和下一 Review。
 - [x] 实现 title/contest/problem/tags 的大小写不敏感部分搜索。
-- [x] 实现 status、category、platform、Due/Overdue/Scheduled/No Review 筛选。
+- [x] 实现 status、`?knowledge=`、platform、Due/Overdue/Scheduled/No Review 筛选；Knowledge filter 支持父级 rollup 与显式 invalid state。
 - [x] 实现 solved date、rating、next review 的升降序排序，并定义空值统一落后。
 - [x] 将查询状态放入 URL 参数，刷新或分享 URL 后结果保持一致。
 - [x] 实现 `/problems/[id]`：基本信息、状态、知识、Review、渲染后的 Markdown 和完整历史。
 - [x] 展示加载错误摘要、无数据和无匹配结果 Empty State。
 
-**验收：** 多筛选组合、排序空值、部分搜索均有测试；一题能同时出现在多个 category 查询结果；Markdown 内容安全渲染。
+**验收：** 多筛选组合、排序空值、部分搜索均有测试；一题能同时出现在多个 Knowledge 查询结果，父节点匹配 descendants 且按题去重；Markdown 内容安全渲染。
 
 ### 阶段 5：Knowledge 与 Status 浏览
 
-- [x] 实现 Knowledge 总览，按集中配置展示八类及 Total、A/B/C/D、Mastered、Mastery Rate。
-- [x] 实现 category 详情与扁平 tag 聚合，列出该分类全部题目。
+- [x] 实现 Knowledge 总览，展示十个 Domain 及 rollup Total、A/B/C/D、Mastered、Mastery Rate。
+- [x] 实现 `/knowledge/[...segments]` 层级节点页、breadcrumb、children、direct/rollup statistics 与 descendant Problems。
 - [x] 实现 Status 总览和 A/B/C/D 页面或参数化视图。
-- [x] C 页面突出未安排 Review；D 页面突出 category、tags、错误原因正文摘要和 Review 状态。
+- [x] C 页面突出未安排 Review；D 页面突出 Knowledge breadcrumbs、tags、错误原因正文摘要和 Review 状态。
 - [x] 统一复用 Problem 列表和统计组件，避免在页面组件重复业务逻辑。
 
-**验收：** Total 为 0 时掌握率安全返回约定值；多分类题计入每个相关分类，但全局 Total 只计一次。
+**验收：** Total 为 0 时掌握率安全返回约定值；Knowledge rollup 按 Problem 去重，全局 Total 只计一次。
 
 ### 阶段 6：Review 任务与完成闭环
 
@@ -112,7 +113,7 @@ tests/                # 跨模块与验收测试
 - [x] 实现 Create 表单；必填 title、platform、solvedAt、status，支持其余可选字段及复盘模板。
 - [x] 根据 platform/contest/problem 生成 kebab-case ID，并在保存前允许用户确认；冲突时拒绝覆盖。
 - [x] 实现 Edit 表单，覆盖规范要求字段和 Markdown 正文；ID 只读。
-- [x] categories 使用集中配置且支持多选，tags 支持去重、去空白的自由输入。
+- [x] Create/Edit 使用 production taxonomy 的层级 Knowledge selector，提交稳定 ID 并阻止 duplicate 与 ancestor/descendant 冲突；tags 支持去重、去空白的自由输入。
 - [x] 直接编辑 scheduling 字段不得生成虚假 Review History；完成 Review 必须走专用流程。
 - [x] 增加离开未保存表单提示和字段级错误信息。
 
@@ -131,14 +132,14 @@ tests/                # 跨模块与验收测试
 ### 阶段 9：Statistics
 
 - [x] 实现整体 status 数量/比例与 Mastery Rate。
-- [x] 实现每个 category 的 Total、A/B/C/D、Mastered、Mastery Rate。
+- [x] 实现每个 Knowledge node 的 direct / rollup Total、A/B/C/D、Mastered、Mastery Rate，并按 Problem 去重 ancestor rollup。
 - [x] 实现 rating 区间分布，排除空 rating。
 - [x] 实现最近 7 天、30 天、当年新增题量，日期边界按本地日历计算。
 - [x] 从 reviews 推导状态转换矩阵、C→A/B 和 D→A/B；不得新增持久化 conversion 字段。
-- [x] 实现当前 D 题按 category/tag 的知识缺口聚合。
+- [x] 实现当前 D 题按 direct Knowledge/tag 的知识缺口聚合；Knowledge Gap 不向 ancestors rollup。
 - [x] 对统计定义添加界面说明，避免将“题目数”和“Review 次数”混淆。
 
-**验收：** SPEC 场景 4 的结果为 Total 100、Mastered 50、Mastery Rate 50%；空数据、缺失 rating、多分类与多次状态往返均有单元测试。
+**验收：** SPEC 场景 4 的结果为 Total 100、Mastered 50、Mastery Rate 50%；空数据、缺失 rating、多 Knowledge direct/rollup 与多次状态往返均有单元测试。
 
 ### 阶段 10：UX、可访问性与浏览器验收
 

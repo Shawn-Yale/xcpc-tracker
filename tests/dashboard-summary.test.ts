@@ -26,6 +26,7 @@ function problem(input: {
       platform: "Codeforces",
       solvedAt: input.solvedAt,
       status: input.status,
+      knowledge: [],
       nextReviewDate: input.nextReviewDate,
       reviewIntervalDays: input.nextReviewDate == null ? null : 7,
       reviews: input.reviews ?? [],

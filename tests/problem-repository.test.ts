@@ -2,11 +2,14 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProblemDataError } from "@/lib/problems/errors";
 import { serializeProblemMarkdown } from "@/lib/problems/markdown";
-import { ProblemRepository } from "@/lib/problems/repository";
+import {
+  createProblemRepository,
+  ProblemRepository,
+} from "@/lib/problems/repository";
 import {
   problemFrontmatterSchema,
   type ProblemDocument,
@@ -28,7 +31,7 @@ function makeProblem(id: string, title = "Test Problem"): ProblemDocument {
       platform: "Codeforces",
       solvedAt: "2026-08-01",
       status: "C",
-      categories: ["图论"],
+      knowledge: ["graph.shortest-path.dijkstra"],
       tags: ["最短路"],
       nextReviewDate: "2026-08-08",
       reviewIntervalDays: 7,
@@ -48,11 +51,34 @@ function makeProblem(id: string, title = "Test Problem"): ProblemDocument {
 }
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
       rm(directory, { recursive: true, force: true }),
     ),
   );
+});
+
+describe("ProblemRepository directory selection", () => {
+  it("uses an explicit environment directory without changing the production default", async () => {
+    const directory = await makeDirectory();
+    vi.stubEnv("XCPC_PROBLEMS_DIRECTORY", directory);
+    const repository = createProblemRepository();
+
+    expect(repository.directory).toBe(path.resolve(directory));
+    await expect(repository.loadAll()).resolves.toEqual({
+      problems: [],
+      errors: [],
+    });
+  });
+
+  it("keeps the repository data/problems directory as the default", () => {
+    vi.stubEnv("XCPC_PROBLEMS_DIRECTORY", "");
+
+    expect(createProblemRepository().directory).toBe(
+      path.join(process.cwd(), "data", "problems"),
+    );
+  });
 });
 
 describe("ProblemRepository loading", () => {
@@ -93,6 +119,42 @@ describe("ProblemRepository loading", () => {
       expect.objectContaining({
         fileName: "broken-problem.md",
         code: "validation-error",
+      }),
+    ]);
+  });
+
+  it("isolates files containing legacy categories while retaining valid problems", async () => {
+    const directory = await makeDirectory();
+    const repository = new ProblemRepository(directory);
+    await repository.create(makeProblem("valid-problem"));
+    await writeFile(
+      path.join(directory, "legacy-problem.md"),
+      `---
+id: legacy-problem
+title: Legacy Problem
+platform: Codeforces
+solvedAt: "2026-08-01"
+status: C
+knowledge: []
+categories: []
+tags: []
+reviews: []
+---
+body
+`,
+      "utf8",
+    );
+
+    const result = await new ProblemRepository(directory).loadAll();
+
+    expect(result.problems.map((problem) => problem.frontmatter.id)).toEqual([
+      "valid-problem",
+    ]);
+    expect(result.errors).toEqual([
+      expect.objectContaining({
+        fileName: "legacy-problem.md",
+        code: "validation-error",
+        message: expect.stringContaining("Legacy categories is not supported"),
       }),
     ]);
   });
@@ -147,6 +209,8 @@ describe("ProblemRepository writes", () => {
     expect(updated.frontmatter.futureField).toBe("keep-me");
     expect(updated.content).toContain("测试正文");
     expect(source).not.toContain(".tmp");
+    expect(source).toContain("knowledge:");
+    expect(source).not.toContain("categories:");
     await expect(repository.findById("safe-update")).resolves.toMatchObject({
       frontmatter: { rating: 1900 },
     });

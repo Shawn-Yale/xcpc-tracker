@@ -33,7 +33,7 @@ export default async function EditProblemPage({ params }: EditProblemPageProps) 
     solvedAt: frontmatter.solvedAt,
     durationMinutes: frontmatter.durationMinutes ?? null,
     status: frontmatter.status,
-    categories: frontmatter.categories,
+    knowledge: frontmatter.knowledge,
     tags: frontmatter.tags,
     scheduleReview:
       frontmatter.nextReviewDate != null && frontmatter.reviewIntervalDays != null,

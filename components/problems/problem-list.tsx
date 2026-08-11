@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { DateOnly } from "@/lib/date/date-only";
+import { getKnowledgeNames } from "@/lib/knowledge/presentation";
 import type { ProblemFile } from "@/lib/problems/types";
 
 import { ReviewDate } from "./review-date";
@@ -74,7 +75,7 @@ export function ProblemList({
                   Status
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
-                  Categories
+                  Knowledge
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
                   Tags
@@ -108,7 +109,7 @@ export function ProblemList({
                     <StatusBadge status={problem.frontmatter.status} />
                   </td>
                   <td className="max-w-52 px-3 py-4">
-                    <TagList values={problem.frontmatter.categories} />
+                    <TagList values={getKnowledgeNames(problem.frontmatter.knowledge)} />
                   </td>
                   <td className="max-w-56 px-3 py-4">
                     <TagList muted values={problem.frontmatter.tags} />
@@ -169,7 +170,7 @@ export function ProblemList({
             </dl>
 
             <div className="mt-4 space-y-2">
-              <TagList values={problem.frontmatter.categories} />
+              <TagList values={getKnowledgeNames(problem.frontmatter.knowledge)} />
               <TagList muted values={problem.frontmatter.tags} />
             </div>
           </li>

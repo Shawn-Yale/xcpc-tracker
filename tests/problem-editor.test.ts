@@ -53,7 +53,7 @@ describe("problem editor normalization", () => {
     formData.set("scheduleReview", "on");
     formData.set("nextReviewDate", "2026-08-14");
     formData.set("reviewIntervalDays", "4");
-    formData.append("categories", "图论");
+    formData.append("knowledge", "graph.shortest-path.dijkstra");
     formData.set("tags", "最短路, 图论, 最短路");
     const result = parseProblemEditorFormData(formData);
 
@@ -61,12 +61,36 @@ describe("problem editor normalization", () => {
     if (result.success) {
       expect(result.data).toMatchObject({
         rating: 2100,
-        categories: ["图论"],
+        knowledge: ["graph.shortest-path.dijkstra"],
         tags: ["最短路", "图论"],
         nextReviewDate: "2026-08-14",
         reviewIntervalDays: 4,
       });
     }
+  });
+
+  it("validates unknown, duplicate, and ancestor-conflicting knowledge FormData", () => {
+    for (const values of [
+      ["unknown"],
+      ["graph.shortest-path.dijkstra", "graph.shortest-path.dijkstra"],
+      ["graph.shortest-path", "graph.shortest-path.dijkstra"],
+    ]) {
+      const formData = validFormData();
+      for (const value of values) formData.append("knowledge", value);
+      const result = parseProblemEditorFormData(formData);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((issue) => issue.path[0] === "knowledge")).toBe(true);
+      }
+    }
+  });
+
+  it("accepts empty and multiple sibling knowledge selections", () => {
+    expect(parseProblemEditorFormData(validFormData()).success).toBe(true);
+    const formData = validFormData();
+    formData.append("knowledge", "graph.shortest-path.dijkstra");
+    formData.append("knowledge", "graph.shortest-path.bellman-ford");
+    expect(parseProblemEditorFormData(formData)).toMatchObject({ success: true });
   });
 
   it("reports invalid dates, numbers, URLs, IDs, and partial schedules", () => {

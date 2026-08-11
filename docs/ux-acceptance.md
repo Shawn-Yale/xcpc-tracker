@@ -1,6 +1,6 @@
 # Phase 10 UX Acceptance
 
-Date: 2026-08-10
+Date: 2026-08-11
 
 ## Responsive review
 
@@ -27,18 +27,20 @@ horizontal scroll regions on narrow screens.
 
 ## Automated acceptance
 
-Playwright runs six core smoke flows against a production build in both
-1440 × 900 and 390 × 844 Chrome projects (12 checks total). It covers route
-rendering and overflow, keyboard navigation, filtering, safe Markdown detail,
-create-form behavior, Review interval behavior, and automated accessibility.
+Playwright runs seven core smoke flows against a production build in both
+1440 × 900 and 390 × 844 Chrome projects (14 checks total). It covers route
+rendering and overflow, keyboard navigation, Knowledge filtering, safe Markdown
+detail, hierarchical Knowledge navigation and invalid-path handling,
+create-form taxonomy selection, Review interval behavior, and automated accessibility.
 The tests intentionally do not submit forms, so repository data is never
 modified during browser acceptance.
 
 SPEC scenarios 1–6 are mapped to automated tests: initial scheduling and form
 validation (`problem-editor`), Today/Overdue immutability (`review-queue`), C→B
 history and rescheduling (`problem-repository`), the 20/30/40/10 mastery totals
-(`statistics-analysis`), multi-category membership (`problem-query` and
-`statistics-analysis`), and malformed-file isolation (`problem-repository`).
+(`statistics-analysis`), multi-Knowledge membership and ancestor rollup
+(`problem-query` and `statistics-analysis`), and malformed-file isolation
+(`problem-repository`).
 
 ## Performance decision
 
