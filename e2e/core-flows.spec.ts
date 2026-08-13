@@ -246,6 +246,97 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
   await expect(page.getByRole("heading", { name: "Knowledge node not found" })).toBeVisible();
 });
 
+test("Statistics Knowledge mastery filters and expands one taxonomy level at a time", async ({
+  page,
+}) => {
+  await page.goto("/statistics");
+
+  const filters = page.getByRole("group", { name: "分类掌握度筛选" });
+  const withTraining = filters.getByRole("button", { name: "有训练记录" });
+  await expect(withTraining).toHaveAttribute("aria-pressed", "true");
+  await expect(filters.getByRole("button", { name: "全部" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+
+  const directHelp = page.getByRole("button", { name: "说明 Direct" });
+  const rollupHelp = page.getByRole("button", { name: "说明 Rollup" });
+  const directExplanation = page.getByRole("note").filter({
+    hasText: "仅统计直接归类到当前知识节点的题目。",
+  });
+  const rollupExplanation = page.getByRole("note").filter({
+    hasText: "统计当前节点及其所有下级知识节点中的题目；同一道题在当前节点下只计一次。",
+  });
+  await expect(directHelp).toBeVisible();
+  await expect(rollupHelp).toBeVisible();
+  await expect(directExplanation).toBeHidden();
+  await directHelp.focus();
+  await directHelp.press("Enter");
+  await expect(directExplanation).toBeVisible();
+  await rollupHelp.click();
+  await expect(rollupExplanation).toBeVisible();
+
+  await expect(page.getByRole("link", { name: "图论", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "动态规划", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "最短路", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Dijkstra", exact: true })).toHaveCount(0);
+
+  const graphToggle = page.getByRole("button", { name: "展开 图论" });
+  await expect(graphToggle).toHaveAttribute("aria-expanded", "false");
+  await graphToggle.click();
+  await expect(page.getByRole("button", { name: "收起 图论" })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await expect(
+    page.getByRole("link", { name: "最短路", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Dijkstra", exact: true })).toHaveCount(0);
+
+  const shortestPathToggle = page.getByRole("button", { name: "展开 最短路" });
+  await shortestPathToggle.click();
+  await expect(
+    page.getByRole("button", { name: "收起 最短路" }),
+  ).toHaveAttribute("aria-expanded", "true");
+  const dijkstraLink = page.getByRole("link", { name: "Dijkstra", exact: true });
+  await expect(dijkstraLink).toBeVisible();
+  await expect(
+    dijkstraLink.locator("xpath=preceding-sibling::button[1]"),
+  ).toHaveCount(0);
+
+  await page.getByRole("button", { name: "收起 图论" }).click();
+  await expect(page.getByRole("button", { name: "展开 图论" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  await expect(
+    page.getByRole("link", { name: "最短路", exact: true }),
+  ).toHaveCount(0);
+
+  for (const name of ["全部", "C-D 薄弱", "已掌握", "有训练记录"] as const) {
+    const filter = filters.getByRole("button", { name });
+    await filter.click();
+    await expect(filter).toHaveAttribute("aria-pressed", "true");
+  }
+
+  await filters.getByRole("button", { name: "已掌握" }).click();
+  const masteredGraphToggle = page.getByRole("button", { name: "展开 图论" });
+  await masteredGraphToggle.click();
+  await expect(
+    page.getByRole("button", { name: "收起 最短路" }),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(dijkstraLink).toBeVisible();
+  await dijkstraLink.click();
+  await expect(page).toHaveURL(/\/knowledge\/graph\/shortest-path\/dijkstra$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Dijkstra" }),
+  ).toBeVisible();
+});
+
 test("Review form updates its interval suggestion", async ({ page }) => {
   await page.goto("/review/e2e-dijkstra");
   await page.getByLabel("新状态").selectOption("D");
