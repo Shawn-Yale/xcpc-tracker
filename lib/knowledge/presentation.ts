@@ -23,7 +23,3 @@ export function getKnowledgeBreadcrumb(id: KnowledgeId): string {
     .filter((name): name is string => name !== undefined)
     .join(" / ");
 }
-
-export function getKnowledgeNames(ids: readonly KnowledgeId[]): string[] {
-  return ids.map(getKnowledgeBreadcrumb);
-}
