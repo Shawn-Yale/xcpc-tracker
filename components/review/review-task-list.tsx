@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ReviewDate } from "@/components/problems/review-date";
 import { StatusBadge } from "@/components/problems/status-badge";
 import type { DateOnly } from "@/lib/date/date-only";
-import { getKnowledgeNames } from "@/lib/knowledge/presentation";
+import { getKnowledgeLabel } from "@/lib/knowledge/presentation";
 import type { ProblemFile } from "@/lib/problems/types";
 
 type ReviewTaskListProps = {
@@ -42,7 +42,7 @@ export function ReviewTaskList({ emptyMessage, problems, today }: ReviewTaskList
                 {frontmatter.platform}
                 {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
                 {frontmatter.knowledge.length > 0
-                  ? ` · ${getKnowledgeNames(frontmatter.knowledge).join(" · ")}`
+                  ? ` · ${frontmatter.knowledge.map(getKnowledgeLabel).join(" · ")}`
                   : ""}
               </p>
             </div>
