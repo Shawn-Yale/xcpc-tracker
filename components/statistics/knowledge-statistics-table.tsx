@@ -22,6 +22,12 @@ const filterLabels: Record<KnowledgeTreeFilter, string> = {
   mastered: "已掌握",
 };
 
+export function formatKnowledgeMastery(statistics: KnowledgeStats): string {
+  return statistics.rollup.total === 0
+    ? "—"
+    : `${statistics.rollup.masteryRate.toFixed(0)}%`;
+}
+
 function ColumnExplanation({
   label,
   children,
@@ -110,7 +116,7 @@ export function KnowledgeStatisticsTable({ rows }: { rows: readonly KnowledgeSta
       </div>
 
       {visibleRows.length === 0 ? (
-        <p className="border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-600">
+        <p className="border border-dashed border-slate-300 bg-slate-50/60 px-4 py-5 text-center text-sm text-slate-500">
           当前筛选下暂无分类记录。
         </p>
       ) : (
@@ -166,7 +172,7 @@ export function KnowledgeStatisticsTable({ rows }: { rows: readonly KnowledgeSta
                   <td className="px-3 py-3 text-right font-mono">{statistics.rollup.statusCounts.B}</td>
                   <td className="px-3 py-3 text-right font-mono">{statistics.rollup.statusCounts.C}</td>
                   <td className="px-3 py-3 text-right font-mono">{statistics.rollup.statusCounts.D}</td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold">{statistics.rollup.masteryRate.toFixed(0)}%</td>
+                  <td className="px-4 py-3 text-right font-mono font-semibold">{formatKnowledgeMastery(statistics)}</td>
                 </tr>;
               })}
             </tbody>

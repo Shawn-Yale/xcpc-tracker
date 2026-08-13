@@ -126,7 +126,7 @@ export default async function StatisticsPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Knowledge mastery</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-950" id="knowledge-stats-title">分类掌握度</h2>
-              <p className="mt-2 text-sm text-slate-600">Direct 只统计显式选择；Rollup 包含 descendants，并按题目去重。</p>
+              <p className="mt-2 text-sm text-slate-600">Direct 为直接归类；Rollup 汇总下级分类。</p>
             </div>
             <div className="mt-5"><KnowledgeStatisticsTable rows={summary.knowledge} /></div>
           </section>

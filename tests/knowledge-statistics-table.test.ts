@@ -2,7 +2,10 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { KnowledgeStatisticsTable } from "@/components/statistics/knowledge-statistics-table";
+import {
+  formatKnowledgeMastery,
+  KnowledgeStatisticsTable,
+} from "@/components/statistics/knowledge-statistics-table";
 import { knowledgeCatalog } from "@/config/knowledge-taxonomy";
 import type {
   KnowledgeStats,
@@ -27,6 +30,22 @@ function makeRows(
 }
 
 describe("KnowledgeStatisticsTable initial presentation", () => {
+  it("distinguishes empty mastery from a trained zero-percent result", () => {
+    const emptyRow = makeRows()[0];
+    const nonMasteredRow: KnowledgeStats = {
+      ...emptyRow,
+      rollup: {
+        total: 2,
+        statusCounts: { A: 0, B: 0, C: 1, D: 1 },
+        mastered: 0,
+        masteryRate: 0,
+      },
+    };
+
+    expect(formatKnowledgeMastery(emptyRow)).toBe("—");
+    expect(formatKnowledgeMastery(nonMasteredRow)).toBe("0%");
+  });
+
   it("shows an empty state instead of an empty table for the default filter", () => {
     const markup = renderToStaticMarkup(
       createElement(KnowledgeStatisticsTable, { rows: makeRows() }),
