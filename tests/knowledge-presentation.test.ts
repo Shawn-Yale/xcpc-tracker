@@ -17,21 +17,28 @@ function knowledgeId(value: string): KnowledgeId {
 }
 
 describe("knowledge presentation", () => {
-  it("returns leaf labels without changing breadcrumbs", () => {
+  it("returns a Technique's own name without changing its breadcrumb", () => {
     const fenwickTree = knowledgeId(
       "data-structure.range-query.fenwick-tree",
-    );
-    const segmentTree = knowledgeId(
-      "data-structure.range-query.segment-tree",
     );
 
     expect(getKnowledgeLabel(fenwickTree)).toBe("树状数组");
     expect(getKnowledgeBreadcrumb(fenwickTree)).toBe(
       "数据结构 / 区间查询结构 / 树状数组",
     );
-    expect(getKnowledgeLabel(segmentTree)).toBe("线段树");
-    expect(getKnowledgeBreadcrumb(segmentTree)).toBe(
-      "数据结构 / 区间查询结构 / 线段树",
+  });
+
+  it("returns a selectable non-leaf Topic's own name without changing its breadcrumb", () => {
+    const binarySearch = knowledgeId("algorithmic-techniques.binary-search");
+    const entry = getKnowledgeEntry(knowledgeCatalog, binarySearch);
+
+    expect(entry?.selectable).toBe(true);
+    expect(
+      knowledgeCatalog.entries.some((candidate) => candidate.parentId === binarySearch),
+    ).toBe(true);
+    expect(getKnowledgeLabel(binarySearch)).toBe("二分");
+    expect(getKnowledgeBreadcrumb(binarySearch)).toBe(
+      "通用算法技巧 / 二分",
     );
   });
 
