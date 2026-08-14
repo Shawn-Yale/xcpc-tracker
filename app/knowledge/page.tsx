@@ -59,7 +59,7 @@ export default async function KnowledgePage() {
             return (
               <article key={domain.id}>
                 <KnowledgeNavigationCard
-                  className="p-5"
+                  className="sm:p-5"
                   href={getKnowledgeHref(domain.id)}
                   problemCount={stats.rollup.total}
                   title={domain.name}
@@ -67,7 +67,16 @@ export default async function KnowledgePage() {
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     {domain.description}
                   </p>
-                  <dl className="mt-5 grid grid-cols-6 gap-px overflow-hidden rounded bg-slate-200 text-center ring-1 ring-slate-200">
+                  {stats.rollup.total === 0 ? (
+                    <p className="mt-3 text-sm text-slate-500 sm:hidden">
+                      暂无训练记录
+                    </p>
+                  ) : null}
+                  <dl
+                    className={`mt-3 grid-cols-6 gap-px overflow-hidden rounded bg-slate-200 text-center ring-1 ring-slate-200 sm:mt-5 ${
+                      stats.rollup.total === 0 ? "hidden sm:grid" : "grid"
+                    }`}
+                  >
                     {(["A", "B", "C", "D"] as const).map((status) => (
                       <div className="bg-slate-50 px-2 py-2" key={status}>
                         <dt className="text-[0.65rem] font-semibold text-slate-500">{status}</dt>

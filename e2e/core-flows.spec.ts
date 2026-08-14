@@ -236,7 +236,9 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
   ]);
 });
 
-test("hierarchical Knowledge navigation resolves canonical paths", async ({ page }) => {
+test("hierarchical Knowledge navigation resolves canonical paths", async ({
+  page,
+}, testInfo) => {
   await page.goto("/knowledge");
   await expect(page.getByRole("heading", { name: "知识领域" })).toBeVisible();
   await expect(
@@ -247,13 +249,49 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
     page.getByText(/Knowledge Domains|descendants rollup|个 Domain/),
   ).toHaveCount(0);
   const domainCards = page.locator('section[aria-labelledby="knowledge-list-title"] article a');
+  await expect(domainCards).toHaveCount(10);
   await expect(domainCards.first()).toContainText("通用算法技巧");
   await expect(domainCards.first()).toHaveAttribute(
     "href",
     "/knowledge/algorithmic-techniques",
   );
+  const zeroDomainCard = domainCards.first();
   const graphDomainCard = page.getByRole("link", { name: /图论.*1 题/ });
   await expect(graphDomainCard).toHaveAttribute("href", "/knowledge/graph");
+  await expect(graphDomainCard.locator("dl")).toBeVisible();
+  await expect(graphDomainCard.locator("dl")).toContainText(/A\s*0/);
+  await expect(graphDomainCard.locator("dl")).toContainText(/B\s*1/);
+  await expect(graphDomainCard.locator("dl")).toContainText(/C\s*0/);
+  await expect(graphDomainCard.locator("dl")).toContainText(/D\s*0/);
+  await expect(graphDomainCard.locator("dl")).toContainText(/掌握\s*1/);
+  await expect(graphDomainCard.locator("dl")).toContainText(/掌握率\s*100%/);
+
+  if (testInfo.project.name === "mobile-chrome") {
+    await expect(zeroDomainCard).toContainText("0 题");
+    await expect(zeroDomainCard.getByText("暂无训练记录")).toBeVisible();
+    await expect(zeroDomainCard.locator("dl")).toBeHidden();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+  } else {
+    await expect(zeroDomainCard.getByText("暂无训练记录")).toBeHidden();
+    await expect(zeroDomainCard.locator("dl")).toBeVisible();
+    await expect(zeroDomainCard.locator("dl")).toContainText(/A\s*0/);
+    await expect(zeroDomainCard.locator("dl")).toContainText(/B\s*0/);
+    await expect(zeroDomainCard.locator("dl")).toContainText(/C\s*0/);
+    await expect(zeroDomainCard.locator("dl")).toContainText(/D\s*0/);
+    await expect(zeroDomainCard.locator("dl")).toContainText(/掌握\s*0/);
+    await expect(zeroDomainCard.locator("dl")).toContainText(/掌握率\s*0%/);
+    const firstDomainBox = await domainCards.nth(0).boundingBox();
+    const secondDomainBox = await domainCards.nth(1).boundingBox();
+    expect(firstDomainBox).not.toBeNull();
+    expect(secondDomainBox).not.toBeNull();
+    expect(secondDomainBox!.y).toBe(firstDomainBox!.y);
+    expect(secondDomainBox!.x).toBeGreaterThan(firstDomainBox!.x);
+  }
+
   const graphDomainBox = await graphDomainCard.boundingBox();
   expect(graphDomainBox).not.toBeNull();
   await graphDomainCard.click({
