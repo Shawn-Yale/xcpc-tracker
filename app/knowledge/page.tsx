@@ -39,13 +39,13 @@ export default async function KnowledgePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-slate-950" id="knowledge-list-title">
-              Knowledge Domains
+              知识领域
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              统计按节点及其全部 descendants rollup，每题在同一节点下只计一次。
+              统计包含每个领域及其下级知识点，每题在同一领域下只计一次。
             </p>
           </div>
-          <span className="text-sm text-slate-500">{knowledgeTaxonomy.length} 个 Domain</span>
+          <span className="text-sm text-slate-500">{knowledgeTaxonomy.length} 个领域</span>
         </div>
 
         <div className="mt-5 grid gap-4 xl:grid-cols-2">

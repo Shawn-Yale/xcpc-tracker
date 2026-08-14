@@ -238,6 +238,20 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
 
 test("hierarchical Knowledge navigation resolves canonical paths", async ({ page }) => {
   await page.goto("/knowledge");
+  await expect(page.getByRole("heading", { name: "知识领域" })).toBeVisible();
+  await expect(
+    page.getByText("统计包含每个领域及其下级知识点，每题在同一领域下只计一次。"),
+  ).toBeVisible();
+  await expect(page.getByText("10 个领域")).toBeVisible();
+  await expect(
+    page.getByText(/Knowledge Domains|descendants rollup|个 Domain/),
+  ).toHaveCount(0);
+  const domainCards = page.locator('section[aria-labelledby="knowledge-list-title"] article a');
+  await expect(domainCards.first()).toContainText("通用算法技巧");
+  await expect(domainCards.first()).toHaveAttribute(
+    "href",
+    "/knowledge/algorithmic-techniques",
+  );
   const graphDomainCard = page.getByRole("link", { name: /图论.*1 题/ });
   await expect(graphDomainCard).toHaveAttribute("href", "/knowledge/graph");
   const graphDomainBox = await graphDomainCard.boundingBox();
@@ -257,6 +271,10 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
   await expect(
     page.getByText("当前知识点及其下级知识点，共 1 题"),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "在题目库中筛选" })).toHaveAttribute(
+    "href",
+    "/problems?knowledge=graph",
+  );
 
   const childCards = page.locator('section[aria-labelledby="children-title"] a');
   await expect(childCards.first()).toContainText("连通性");
@@ -278,6 +296,10 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
   await expect(page.getByRole("heading", { name: /下级知识点/ })).toHaveCount(0);
   await expect(page.getByText("当前知识点，共 1 题")).toBeVisible();
   await expect(page.getByText(/直接归类|Rollup|Direct|descendants/)).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "在题目库中筛选" })).toHaveAttribute(
+    "href",
+    "/problems?knowledge=graph.shortest-path.dijkstra",
+  );
   await expect(page.getByRole("link", { name: "最短路" })).toHaveAttribute("href", "/knowledge/graph/shortest-path");
   await expect(page.locator('a:visible[href="/problems/e2e-dijkstra"]')).toBeVisible();
 

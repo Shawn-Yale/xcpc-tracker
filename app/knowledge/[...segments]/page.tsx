@@ -83,7 +83,7 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
         </section>
       ) : null}
       <section aria-labelledby="knowledge-problems-title">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div><h2 className="text-xl font-semibold text-slate-950" id="knowledge-problems-title">Problems</h2><p className="mt-1 text-sm text-slate-500">{isParent ? "当前知识点及其下级知识点" : "当前知识点"}，共 {visibleProblems.length} 题</p></div>
           <Link className="text-sm font-semibold text-sky-800 hover:underline" href={`/problems?knowledge=${encodeURIComponent(entry.id)}`}>在题目库中筛选</Link>
         </div>
