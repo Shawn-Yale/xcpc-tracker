@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { KnowledgeNavigationCard } from "@/components/knowledge/knowledge-navigation-card";
 import { LoadErrorSummary } from "@/components/problems/load-error-summary";
 import { ProblemList } from "@/components/problems/problem-list";
 import { StatsStrip } from "@/components/statistics/stats-strip";
@@ -33,7 +34,10 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
     platform: "all", review: "all", sort: "solvedAt", direction: "desc",
   };
   const visibleProblems = queryProblems(problems, query, today);
-  const stats = getKnowledgeStats(problems).find((item) => item.id === entry.id)!;
+  const statsByKnowledge = new Map(
+    getKnowledgeStats(problems).map((item) => [item.id, item]),
+  );
+  const stats = statsByKnowledge.get(entry.id)!;
   const children = knowledgeCatalog.entries.filter((item) => item.parentId === entry.id);
   const breadcrumbEntries = [...entry.ancestorIds, entry.id]
     .map((id) => getKnowledgeEntry(knowledgeCatalog, id))
@@ -60,7 +64,14 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
         <section aria-labelledby="children-title">
           <h2 className="text-xl font-semibold text-slate-950" id="children-title">Children</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {children.map((child) => <Link className="border border-slate-200 bg-white p-4 font-semibold text-slate-900 hover:border-sky-400 hover:text-sky-800" href={getKnowledgeHref(child.id)} key={child.id}>{child.name}</Link>)}
+            {children.map((child) => (
+              <KnowledgeNavigationCard
+                href={getKnowledgeHref(child.id)}
+                key={child.id}
+                problemCount={statsByKnowledge.get(child.id)!.rollup.total}
+                title={child.name}
+              />
+            ))}
           </div>
         </section>
       ) : null}

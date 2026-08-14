@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import { KnowledgeNavigationCard } from "@/components/knowledge/knowledge-navigation-card";
 import { LoadErrorSummary } from "@/components/problems/load-error-summary";
 import { StatsStrip } from "@/components/statistics/stats-strip";
 import { knowledgeTaxonomy } from "@/config/knowledge-taxonomy";
@@ -57,51 +57,39 @@ export default async function KnowledgePage() {
             }
 
             return (
-              <article
-                className="group border border-slate-200 bg-white p-5 shadow-sm transition hover:border-sky-300 hover:shadow-md"
-                key={domain.id}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-950 group-hover:text-sky-800">
-                      <Link
-                        className="focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
-                        href={getKnowledgeHref(domain.id)}
-                      >
-                        {domain.name}
-                      </Link>
-                    </h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
-                      {domain.description}
-                    </p>
-                  </div>
-                  <span className="font-mono text-2xl font-semibold text-slate-950 tabular-nums">
-                    {stats.rollup.total}
-                  </span>
-                </div>
-
-                <dl className="mt-5 grid grid-cols-6 gap-px overflow-hidden rounded bg-slate-200 text-center ring-1 ring-slate-200">
-                  {(["A", "B", "C", "D"] as const).map((status) => (
-                    <div className="bg-slate-50 px-2 py-2" key={status}>
-                      <dt className="text-[0.65rem] font-semibold text-slate-500">{status}</dt>
+              <article key={domain.id}>
+                <KnowledgeNavigationCard
+                  className="p-5"
+                  href={getKnowledgeHref(domain.id)}
+                  problemCount={stats.rollup.total}
+                  title={domain.name}
+                >
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {domain.description}
+                  </p>
+                  <dl className="mt-5 grid grid-cols-6 gap-px overflow-hidden rounded bg-slate-200 text-center ring-1 ring-slate-200">
+                    {(["A", "B", "C", "D"] as const).map((status) => (
+                      <div className="bg-slate-50 px-2 py-2" key={status}>
+                        <dt className="text-[0.65rem] font-semibold text-slate-500">{status}</dt>
+                        <dd className="mt-0.5 font-mono font-semibold text-slate-900">
+                          {stats.rollup.statusCounts[status]}
+                        </dd>
+                      </div>
+                    ))}
+                    <div className="bg-slate-50 px-2 py-2">
+                      <dt className="text-[0.65rem] font-semibold text-slate-500">掌握</dt>
                       <dd className="mt-0.5 font-mono font-semibold text-slate-900">
-                        {stats.rollup.statusCounts[status]}
+                        {stats.rollup.mastered}
                       </dd>
                     </div>
-                  ))}
-                  <div className="bg-slate-50 px-2 py-2">
-                    <dt className="text-[0.65rem] font-semibold text-slate-500">掌握</dt>
-                    <dd className="mt-0.5 font-mono font-semibold text-slate-900">
-                      {stats.rollup.mastered}
-                    </dd>
-                  </div>
-                  <div className="bg-sky-50 px-2 py-2">
-                    <dt className="text-[0.65rem] font-semibold text-sky-700">掌握率</dt>
-                    <dd className="mt-0.5 font-mono font-semibold text-sky-900">
-                      {stats.rollup.masteryRate.toFixed(0)}%
-                    </dd>
-                  </div>
-                </dl>
+                    <div className="bg-sky-50 px-2 py-2">
+                      <dt className="text-[0.65rem] font-semibold text-sky-700">掌握率</dt>
+                      <dd className="mt-0.5 font-mono font-semibold text-sky-900">
+                        {stats.rollup.masteryRate.toFixed(0)}%
+                      </dd>
+                    </div>
+                  </dl>
+                </KnowledgeNavigationCard>
               </article>
             );
           })}

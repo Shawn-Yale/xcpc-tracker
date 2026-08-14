@@ -237,6 +237,30 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
 });
 
 test("hierarchical Knowledge navigation resolves canonical paths", async ({ page }) => {
+  await page.goto("/knowledge");
+  const graphDomainCard = page.getByRole("link", { name: /图论.*1 题/ });
+  await expect(graphDomainCard).toHaveAttribute("href", "/knowledge/graph");
+  const graphDomainBox = await graphDomainCard.boundingBox();
+  expect(graphDomainBox).not.toBeNull();
+  await graphDomainCard.click({
+    position: { x: graphDomainBox!.width - 8, y: graphDomainBox!.height - 8 },
+  });
+  await expect(page).toHaveURL(/\/knowledge\/graph$/);
+
+  const childCards = page.locator('section[aria-labelledby="children-title"] a');
+  await expect(childCards.first()).toContainText("连通性");
+  const shortestPathCard = page.getByRole("link", { name: /最短路.*1 题/ });
+  await expect(shortestPathCard).toHaveAttribute(
+    "href",
+    "/knowledge/graph/shortest-path",
+  );
+  const shortestPathBox = await shortestPathCard.boundingBox();
+  expect(shortestPathBox).not.toBeNull();
+  await shortestPathCard.click({
+    position: { x: shortestPathBox!.width - 8, y: shortestPathBox!.height - 8 },
+  });
+  await expect(page).toHaveURL(/\/knowledge\/graph\/shortest-path$/);
+
   await page.goto("/knowledge/graph/shortest-path/dijkstra");
   await expect(page.getByRole("heading", { level: 1, name: "Dijkstra" })).toBeVisible();
   await expect(page.getByRole("link", { name: "最短路" })).toHaveAttribute("href", "/knowledge/graph/shortest-path");
