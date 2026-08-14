@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const readOnlyRoutes = [
-  ["/", "把每一次重做，变成真正的掌握。"],
+  ["/", /把每一次重做，\s*变成真正的掌握。/],
   ["/problems", "题目库"],
   ["/knowledge", "知识分类"],
   ["/status", "掌握状态"],
@@ -31,6 +31,60 @@ test("top-level routes render without page-level overflow", async ({ page }) => 
     }));
     expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
   }
+});
+
+test("Dashboard prioritizes Today actions without repeating hero mastery", async ({ page }) => {
+  await page.goto("/");
+
+  const hero = page.locator("main header");
+  const actionSummary = page.getByRole("complementary", {
+    name: "今日行动摘要",
+  });
+  const progress = page.locator('section[aria-labelledby="mastery-title"]');
+  const metricGroups = actionSummary.locator("dl > div");
+  const todayMetric = metricGroups.filter({ hasText: /Today/i });
+  const overdueMetric = metricGroups.filter({ hasText: /overdue/i });
+  const upcomingMetric = metricGroups.filter({ hasText: /next 7 days/i });
+
+  await expect(hero.getByText("Mastery Rate", { exact: true })).toHaveCount(0);
+  await expect(actionSummary).toBeVisible();
+  await expect(todayMetric.getByText("Today", { exact: true })).toBeVisible();
+  await expect(todayMetric.locator("dd")).toContainText(/^\d+\s*待复习$/);
+  await expect(overdueMetric.getByText("overdue", { exact: true })).toBeVisible();
+  await expect(overdueMetric.locator("dd")).toHaveText(/^\d+$/);
+  await expect(upcomingMetric.getByText("next 7 days", { exact: true })).toBeVisible();
+  await expect(upcomingMetric.locator("dd")).toHaveText(/^\d+$/);
+  await expect(progress.getByRole("heading", { name: "总体掌握进度" })).toBeVisible();
+  await expect(progress.locator('[role="img"][aria-label^="Mastery rate"]')).toBeVisible();
+
+  const layout = await page.evaluate(() => {
+    const heroElement = document.querySelector("main header");
+    const focusElement = document.querySelector(
+      'section[aria-labelledby="daily-focus-title"]',
+    );
+
+    if (!(heroElement instanceof HTMLElement) || !(focusElement instanceof HTMLElement)) {
+      throw new Error("Dashboard hero or daily focus was not rendered");
+    }
+
+    const heroRect = heroElement.getBoundingClientRect();
+    const focusRect = focusElement.getBoundingClientRect();
+    const classNames = heroElement.className.split(/\s+/);
+
+    return {
+      focusTop: focusRect.top,
+      heroRight: heroRect.right,
+      hasFixedHeightClass: classNames.some(
+        (className) => className.startsWith("h-") || className.startsWith("min-h-"),
+      ),
+      viewportHeight: window.innerHeight,
+      viewportWidth: document.documentElement.clientWidth,
+    };
+  });
+
+  expect(layout.hasFixedHeightClass).toBe(false);
+  expect(layout.heroRight).toBeLessThanOrEqual(layout.viewportWidth);
+  expect(layout.focusTop).toBeLessThan(layout.viewportHeight);
 });
 
 test("primary navigation and skip link work with the keyboard", async ({ page }) => {
