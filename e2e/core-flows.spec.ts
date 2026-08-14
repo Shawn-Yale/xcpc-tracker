@@ -246,6 +246,17 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
     position: { x: graphDomainBox!.width - 8, y: graphDomainBox!.height - 8 },
   });
   await expect(page).toHaveURL(/\/knowledge\/graph$/);
+  await expect(page.getByRole("heading", { name: "训练概览" })).toBeVisible();
+  await expect(page.getByText("直接归类 0 题")).toBeVisible();
+  await expect(
+    page.getByText("以上统计包含当前知识点及其下级知识点。"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "下级知识点 · 9" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("当前知识点及其下级知识点，共 1 题"),
+  ).toBeVisible();
 
   const childCards = page.locator('section[aria-labelledby="children-title"] a');
   await expect(childCards.first()).toContainText("连通性");
@@ -263,6 +274,10 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({ page
 
   await page.goto("/knowledge/graph/shortest-path/dijkstra");
   await expect(page.getByRole("heading", { level: 1, name: "Dijkstra" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "训练概览" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /下级知识点/ })).toHaveCount(0);
+  await expect(page.getByText("当前知识点，共 1 题")).toBeVisible();
+  await expect(page.getByText(/直接归类|Rollup|Direct|descendants/)).toHaveCount(0);
   await expect(page.getByRole("link", { name: "最短路" })).toHaveAttribute("href", "/knowledge/graph/shortest-path");
   await expect(page.locator('a:visible[href="/problems/e2e-dijkstra"]')).toBeVisible();
 

@@ -39,6 +39,7 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
   );
   const stats = statsByKnowledge.get(entry.id)!;
   const children = knowledgeCatalog.entries.filter((item) => item.parentId === entry.id);
+  const isParent = children.length > 0;
   const breadcrumbEntries = [...entry.ancestorIds, entry.id]
     .map((id) => getKnowledgeEntry(knowledgeCatalog, id))
     .filter((item) => item !== undefined);
@@ -55,14 +56,20 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
         {entry.description ? <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">{entry.description}</p> : null}
       </header>
       <LoadErrorSummary errors={errors} />
-      <section aria-labelledby="rollup-title">
-        <h2 className="text-xl font-semibold text-slate-950" id="rollup-title">Rollup statistics</h2>
-        <div className="mt-4"><StatsStrip stats={stats.rollup} /></div>
-        <p className="mt-3 text-sm text-slate-600">Direct：{stats.direct.total} 题；Rollup 包含当前节点及全部后代节点。</p>
+      <section aria-labelledby="training-overview-title">
+        <h2 className="text-xl font-semibold text-slate-950" id="training-overview-title">训练概览</h2>
+        <div className="mt-4"><StatsStrip stats={isParent ? stats.rollup : stats.direct} /></div>
+        {isParent ? (
+          <p className="mt-3 text-sm text-slate-600">
+            直接归类 {stats.direct.total} 题；以上统计包含当前知识点及其下级知识点。
+          </p>
+        ) : null}
       </section>
-      {children.length > 0 ? (
+      {isParent ? (
         <section aria-labelledby="children-title">
-          <h2 className="text-xl font-semibold text-slate-950" id="children-title">Children</h2>
+          <h2 className="text-xl font-semibold text-slate-950" id="children-title">
+            下级知识点 · {children.length}
+          </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {children.map((child) => (
               <KnowledgeNavigationCard
@@ -77,7 +84,7 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
       ) : null}
       <section aria-labelledby="knowledge-problems-title">
         <div className="flex items-end justify-between gap-4">
-          <div><h2 className="text-xl font-semibold text-slate-950" id="knowledge-problems-title">Problems</h2><p className="mt-1 text-sm text-slate-500">当前节点及 descendants，共 {visibleProblems.length} 题</p></div>
+          <div><h2 className="text-xl font-semibold text-slate-950" id="knowledge-problems-title">Problems</h2><p className="mt-1 text-sm text-slate-500">{isParent ? "当前知识点及其下级知识点" : "当前知识点"}，共 {visibleProblems.length} 题</p></div>
           <Link className="text-sm font-semibold text-sky-800 hover:underline" href={`/problems?knowledge=${encodeURIComponent(entry.id)}`}>在题目库中筛选</Link>
         </div>
         {visibleProblems.length > 0 ? <div className="mt-5 overflow-hidden border border-slate-200"><ProblemList problems={visibleProblems} today={today} /></div> : <p className="mt-5 border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-600">这个知识范围暂无题目。</p>}
