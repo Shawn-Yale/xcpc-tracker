@@ -103,8 +103,25 @@ test("primary navigation and skip link work with the keyboard", async ({ page })
   );
 });
 
-test("problem browsing, filtering, and Markdown detail are usable", async ({ page }) => {
+test("problem browsing, filtering, and Markdown detail are usable", async (
+  { page },
+  testInfo,
+) => {
+  const openMobileFilters = async () => {
+    if (testInfo.project.name !== "mobile-chrome") {
+      return;
+    }
+
+    const filterButton = page.getByRole("button", { name: "展开筛选" });
+    await expect(filterButton).toHaveAttribute("aria-expanded", "false");
+    await filterButton.click();
+    await expect(
+      page.getByRole("button", { name: "收起筛选" }),
+    ).toHaveAttribute("aria-expanded", "true");
+  };
+
   await page.goto("/problems");
+  await openMobileFilters();
   await page.locator('select[name="status"]').selectOption("C");
   await page.getByRole("button", { name: "应用筛选" }).click();
   await expect(page).toHaveURL(/status=C/);
@@ -113,6 +130,7 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   ).toHaveText("Boredom E2E Fixture");
 
   await page.goto("/problems");
+  await openMobileFilters();
   const knowledgeCombobox = page.getByRole("combobox", { name: "知识点" });
   await knowledgeCombobox.click();
   await expect(page.getByRole("listbox").getByRole("option")).toHaveCount(11);
@@ -128,6 +146,7 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await expect(page).toHaveURL(/\/problems$/);
   await page.getByRole("button", { name: "应用筛选" }).click();
   await expect(page).toHaveURL(/knowledge=data-structure.range-query/);
+  await openMobileFilters();
   await page.getByRole("link", { name: "重置" }).click();
   await expect(page).toHaveURL(/\/problems$/);
 
@@ -173,6 +192,54 @@ test("problem browsing, filtering, and Markdown detail are usable", async ({ pag
   await expect(page.getByLabel("编程语言", { exact: true })).toHaveValue(
     "C++17",
   );
+});
+
+test("mobile problem filters disclose progressively without hiding active state", async (
+  { page },
+  testInfo,
+) => {
+  await page.goto("/problems");
+
+  const filterButton = page.getByRole("button", { name: "展开筛选" });
+  const statusSelect = page.locator('select[name="status"]');
+
+  if (testInfo.project.name !== "mobile-chrome") {
+    await expect(filterButton).toBeHidden();
+    await expect(statusSelect).toBeVisible();
+    return;
+  }
+
+  const firstProblem = page.getByRole("link", {
+    name: "Boredom E2E Fixture",
+  });
+  await expect(filterButton).toBeVisible();
+  await expect(filterButton).toHaveAttribute("aria-expanded", "false");
+  await expect(statusSelect).toBeHidden();
+  await expect(firstProblem).toBeVisible();
+  expect(
+    await firstProblem.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.top < window.innerHeight && rect.bottom > 0;
+    }),
+  ).toBe(true);
+
+  await filterButton.focus();
+  await filterButton.press("Enter");
+  const collapseButton = page.getByRole("button", { name: "收起筛选" });
+  await expect(collapseButton).toHaveAttribute("aria-expanded", "true");
+  await expect(statusSelect).toBeVisible();
+
+  await collapseButton.press("Space");
+  await expect(filterButton).toHaveAttribute("aria-expanded", "false");
+  await expect(statusSelect).toBeHidden();
+
+  await page.goto("/problems?status=C");
+  await expect(page.getByText("已调整 1 项条件")).toBeVisible();
+  await expect(filterButton).toHaveAttribute("aria-expanded", "false");
+  await expect(firstProblem).toBeVisible();
+
+  await filterButton.click();
+  await expect(statusSelect).toHaveValue("C");
 });
 
 test("AC solution disclosure is safe, collapsible, and contained", async ({

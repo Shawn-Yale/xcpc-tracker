@@ -14,16 +14,50 @@ const fieldClassName =
   "mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15";
 
 export function ProblemFilters({ query }: { query: ProblemQuery }) {
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [knowledge, setKnowledge] = useState<KnowledgeId | "">(
     query.knowledge.state === "valid" ? query.knowledge.id : "",
   );
+  const adjustedConditionCount = [
+    query.search !== "",
+    query.status !== "all",
+    query.knowledge.state === "valid",
+    query.platform !== "all",
+    query.review !== "all",
+    query.sort !== "solvedAt",
+    query.direction !== "desc",
+  ].filter(Boolean).length;
+
   return (
     <form
       action="/problems"
-      className="border-y border-slate-200 bg-white px-4 py-5 sm:px-5"
+      className="border-y border-slate-200 bg-white"
       method="get"
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900">筛选与排序</p>
+          <p className="mt-0.5 text-xs leading-5 text-slate-500">
+            {adjustedConditionCount > 0
+              ? `已调整 ${adjustedConditionCount} 项条件`
+              : "按状态、知识点等缩小结果"}
+          </p>
+        </div>
+        <button
+          aria-controls="problem-filter-controls"
+          aria-expanded={filtersExpanded}
+          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          onClick={() => setFiltersExpanded((expanded) => !expanded)}
+          type="button"
+        >
+          {filtersExpanded ? "收起筛选" : "展开筛选"}
+        </button>
+      </div>
+
+      <div
+        className={`${filtersExpanded ? "grid" : "hidden"} gap-4 border-t border-slate-200 px-4 py-5 sm:grid-cols-2 sm:px-5 lg:grid lg:grid-cols-4 lg:border-t-0 xl:grid-cols-6`}
+        id="problem-filter-controls"
+      >
         <label className="sm:col-span-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             搜索
