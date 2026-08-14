@@ -6,27 +6,23 @@ import type { ProblemFile } from "@/lib/problems/types";
 
 export function RecentSolvedList({ problems }: { problems: readonly ProblemFile[] }) {
   if (problems.length === 0) {
-    return <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">还没有训练记录。</p>;
+    return <p className="border-l-4 border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">还没有训练记录。</p>;
   }
 
   return (
     <ol className="divide-y divide-slate-200 border-y border-slate-200 bg-white">
       {problems.map(({ frontmatter }) => (
-        <li className="px-4 py-4" key={frontmatter.id}>
-          <div className="flex items-start justify-between gap-4">
+        <li className="px-4 py-3" key={frontmatter.id}>
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <Link className="font-semibold text-slate-950 hover:text-sky-800 hover:underline" href={`/problems/${frontmatter.id}`}>{frontmatter.title}</Link>
-              <p className="mt-1 truncate text-xs text-slate-500">
-                {frontmatter.platform}{frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
-              </p>
+              <Link className="font-semibold leading-5 break-words text-slate-950 hover:text-sky-800 hover:underline" href={`/problems/${frontmatter.id}`}>{frontmatter.title}</Link>
             </div>
             <StatusBadge status={frontmatter.status} />
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <time className="font-mono text-xs text-slate-500" dateTime={frontmatter.solvedAt}>{frontmatter.solvedAt}</time>
-            {frontmatter.knowledge.slice(0, 2).map((id) => (
-              <span className="rounded bg-sky-50 px-2 py-0.5 text-xs text-sky-800" key={id}>{getKnowledgeLabel(id)}</span>
-            ))}
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-5 text-slate-500">
+            <span>{frontmatter.platform}{frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}</span>
+            <time className="font-mono" dateTime={frontmatter.solvedAt}>{frontmatter.solvedAt}</time>
+            {frontmatter.knowledge.slice(0, 2).map((id) => <span className="text-slate-600" key={id}>{getKnowledgeLabel(id)}</span>)}
           </div>
         </li>
       ))}

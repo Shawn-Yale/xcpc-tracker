@@ -36,7 +36,7 @@ function expectLeafLabelsOnly(markup: string): void {
 }
 
 describe("dashboard knowledge presentation", () => {
-  it("shows leaf labels for each taxonomy in C/D Backlog", () => {
+  it("keeps Backlog problem, proficiency, scheduling, and leaf labels visible", () => {
     const markup = renderToStaticMarkup(
       createElement(BacklogList, {
         problems: [problem],
@@ -45,14 +45,37 @@ describe("dashboard knowledge presentation", () => {
     );
 
     expectLeafLabelsOnly(markup);
+    expect(markup).toContain('href="/problems/dashboard-taxonomy-labels"');
+    expect(markup).toContain('aria-label="Status D"');
+    expect(markup).toContain("未安排");
   });
 
-  it("shows leaf labels for each taxonomy in Recent Solved", () => {
+  it("keeps Recent Solved metadata, proficiency, href, and leaf labels visible", () => {
     const markup = renderToStaticMarkup(
       createElement(RecentSolvedList, { problems: [problem] }),
     );
 
     expectLeafLabelsOnly(markup);
+    expect(markup).toContain('href="/problems/dashboard-taxonomy-labels"');
+    expect(markup).toContain('aria-label="Status D"');
+    expect(markup).toContain('<time class="font-mono" dateTime="2026-08-12">2026-08-12</time>');
+    expect(markup).toContain("Codeforces");
+  });
+
+  it("keeps the secondary lists' empty states concise", () => {
+    const recentMarkup = renderToStaticMarkup(
+      createElement(RecentSolvedList, { problems: [] }),
+    );
+    const backlogMarkup = renderToStaticMarkup(
+      createElement(BacklogList, {
+        problems: [],
+        today: dateOnlySchema.parse("2026-08-12"),
+      }),
+    );
+
+    expect(recentMarkup).toContain("还没有训练记录。");
+    expect(backlogMarkup).toContain("当前没有 C/D Backlog");
+    expect(backlogMarkup).toContain("所有题目都已进入 A/B 掌握池，保持节奏即可。");
   });
 
   it("keeps the full taxonomy path available for hierarchical views", () => {
