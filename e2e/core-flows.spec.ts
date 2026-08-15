@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 const readOnlyRoutes = [
   ["/", /把每一次重做，\s*变成真正的掌握。/],
@@ -9,6 +9,26 @@ const readOnlyRoutes = [
   ["/review", "Review 队列"],
   ["/statistics", "统计分析"],
 ] as const;
+
+async function expectFullyWithin(container: Locator, item: Locator) {
+  await expect.poll(async () => {
+    const [containerBox, itemBox] = await Promise.all([
+      container.boundingBox(),
+      item.boundingBox(),
+    ]);
+
+    if (!containerBox || !itemBox) {
+      return false;
+    }
+
+    const tolerance = 1;
+    return (
+      itemBox.x >= containerBox.x - tolerance &&
+      itemBox.x + itemBox.width <=
+        containerBox.x + containerBox.width + tolerance
+    );
+  }).toBe(true);
+}
 
 const expectedSolutionCode = [
   "#include <bits/stdc++.h>",
@@ -88,6 +108,10 @@ test("Dashboard prioritizes Today actions without repeating hero mastery", async
 });
 
 test("primary navigation and skip link work with the keyboard", async ({ page }) => {
+  const navigation = page.getByRole("navigation", {
+    name: "Primary navigation",
+  });
+
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "跳到主要内容" })).toBeFocused();
@@ -101,6 +125,93 @@ test("primary navigation and skip link work with the keyboard", async ({ page })
     "aria-current",
     "page",
   );
+
+  await page.keyboard.press("Tab");
+  await expect(navigation.getByRole("link", { name: "Knowledge" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(navigation.getByRole("link", { name: "Status" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  const reviewLink = navigation.getByRole("link", { name: "Review" });
+  await expect(reviewLink).toBeFocused();
+  await expectFullyWithin(navigation, reviewLink);
+  await page.keyboard.press("Tab");
+  const statisticsLink = navigation.getByRole("link", { name: "Statistics" });
+  await expect(statisticsLink).toBeFocused();
+  await expectFullyWithin(navigation, statisticsLink);
+  await page.keyboard.press("Shift+Tab");
+  await expect(reviewLink).toBeFocused();
+  await expectFullyWithin(navigation, reviewLink);
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/review$/);
+  await expect(reviewLink).toHaveAttribute("aria-current", "page");
+  await expectFullyWithin(navigation, reviewLink);
+});
+
+test("primary navigation keeps the current item within its viewport", async ({
+  page,
+}, testInfo) => {
+  const navigation = page.getByRole("navigation", {
+    name: "Primary navigation",
+  });
+  const currentLink = () => navigation.locator('a[aria-current="page"]');
+
+  if (testInfo.project.name !== "mobile-chrome") {
+    await page.goto("/statistics");
+    await expect(navigation.getByRole("link")).toHaveCount(6);
+    await expectFullyWithin(navigation, currentLink());
+    expect(
+      await navigation.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth,
+      ),
+    ).toBe(true);
+    return;
+  }
+
+  for (const [route, label] of [
+    ["/review", "Review"],
+    ["/statistics", "Statistics"],
+  ] as const) {
+    await page.goto(route);
+    await expect(currentLink()).toHaveText(label);
+    await expectFullyWithin(navigation, currentLink());
+  }
+
+  await page.goto("/");
+  expect(await navigation.evaluate((element) => element.scrollLeft)).toBe(0);
+  await page.getByRole("link", { name: "开始 Review" }).click();
+  await expect(page).toHaveURL(/\/review$/);
+  await expectFullyWithin(navigation, currentLink());
+
+  await navigation.getByRole("link", { name: "Statistics" }).click();
+  await expect(page).toHaveURL(/\/statistics$/);
+  await expectFullyWithin(navigation, currentLink());
+
+  await page.goto("/problems");
+  await navigation.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await navigation.getByRole("link", { name: "Statistics" }).click();
+  await expect(page).toHaveURL(/\/statistics$/);
+  await expectFullyWithin(navigation, currentLink());
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/problems$/);
+  await expectFullyWithin(navigation, currentLink());
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/statistics$/);
+  await expectFullyWithin(navigation, currentLink());
+
+  for (const [route, label] of [
+    ["/problems/e2e-dijkstra", "Problems"],
+    ["/knowledge/graph/shortest-path/dijkstra", "Knowledge"],
+    ["/status/C", "Status"],
+    ["/review/e2e-dijkstra", "Review"],
+  ] as const) {
+    await page.goto(route);
+    await expect(currentLink()).toHaveText(label);
+    await expectFullyWithin(navigation, currentLink());
+  }
 });
 
 test("problem browsing, filtering, and Markdown detail are usable", async (
