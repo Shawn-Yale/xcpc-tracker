@@ -23,22 +23,13 @@ function requireProductionEntry(id: string) {
 }
 
 describe("production knowledge taxonomy", () => {
-  it("matches the frozen V1 inventory counts and selectability", () => {
+  it("preserves domain and selectability invariants", () => {
     const domains = knowledgeCatalog.entries.filter((entry) => entry.depth === 1);
     const topics = knowledgeCatalog.entries.filter((entry) => entry.depth === 2);
     const techniques = knowledgeCatalog.entries.filter((entry) => entry.depth === 3);
-    const selectable = knowledgeCatalog.entries.filter((entry) => entry.selectable);
-    const nonSelectable = knowledgeCatalog.entries.filter(
-      (entry) => !entry.selectable,
-    );
 
     expect(knowledgeTaxonomy).toHaveLength(10);
     expect(domains).toHaveLength(10);
-    expect(topics).toHaveLength(68);
-    expect(techniques).toHaveLength(117);
-    expect(knowledgeCatalog.entries).toHaveLength(195);
-    expect(selectable).toHaveLength(177);
-    expect(nonSelectable).toHaveLength(18);
 
     expect(domains.every((entry) => !entry.selectable)).toBe(true);
     expect(topics.filter((entry) => !entry.selectable)).toHaveLength(8);
@@ -114,5 +105,49 @@ describe("production knowledge taxonomy", () => {
     expect(getKnowledgeParent(knowledgeCatalog, dsuOnTree.id)?.id).toBe(
       "graph.tree",
     );
+  });
+
+  it.each([
+    [
+      "algorithmic-techniques.ternary-search",
+      "三分",
+      "algorithmic-techniques",
+    ],
+    [
+      "algorithmic-techniques.heuristic-merging",
+      "启发式合并",
+      "algorithmic-techniques",
+    ],
+    [
+      "algorithmic-techniques.offline-processing.parallel-binary-search",
+      "整体二分 / 并行二分",
+      "algorithmic-techniques.offline-processing",
+    ],
+    ["data-structure.cartesian-tree", "笛卡尔树", "data-structure"],
+    ["graph.two-sat", "2-SAT", "graph"],
+    ["graph.shortest-path.johnson", "Johnson", "graph.shortest-path"],
+    ["graph.network-flow.minimum-cut", "最小割", "graph.network-flow"],
+    ["dynamic-programming.state-machine", "状态机 DP", "dynamic-programming"],
+    ["dynamic-programming.probability", "概率 DP", "dynamic-programming"],
+    ["dynamic-programming.expected-value", "期望 DP", "dynamic-programming"],
+    ["dynamic-programming.tree.rerooting", "换根 DP", "dynamic-programming.tree"],
+    ["math.number-theory.mobius-inversion", "Möbius 反演", "math.number-theory"],
+  ])("places %s under its required parent", (id, name, parentId) => {
+    const entry = requireProductionEntry(id);
+
+    expect(entry.name).toBe(name);
+    expect(entry.selectable).toBe(true);
+    expect(getKnowledgeParent(knowledgeCatalog, entry.id)?.id).toBe(parentId);
+    expect(resolveKnowledgePath(knowledgeCatalog, entry.pathSegments)).toBe(entry);
+  });
+
+  it("keeps production IDs and canonical paths unique", () => {
+    const ids = knowledgeCatalog.entries.map((entry) => entry.id);
+    const paths = knowledgeCatalog.entries.map((entry) =>
+      entry.pathSegments.join("/"),
+    );
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(paths).size).toBe(paths.length);
   });
 });

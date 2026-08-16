@@ -544,7 +544,7 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({
     page.getByText("以上统计包含当前知识点及其下级知识点。"),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "下级知识点 · 9" }),
+    page.getByRole("heading", { name: "下级知识点 · 10" }),
   ).toBeVisible();
   await expect(
     page.getByText("当前知识点及其下级知识点，共 1 题"),

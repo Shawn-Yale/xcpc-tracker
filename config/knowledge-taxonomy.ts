@@ -49,6 +49,11 @@ const knowledgeTaxonomyDefinition = [
         ],
       },
       {
+        id: "algorithmic-techniques.ternary-search",
+        name: "三分",
+        selectable: true,
+      },
+      {
         id: "algorithmic-techniques.two-pointers",
         name: "双指针",
         selectable: true,
@@ -83,6 +88,11 @@ const knowledgeTaxonomyDefinition = [
         selectable: true,
       },
       {
+        id: "algorithmic-techniques.heuristic-merging",
+        name: "启发式合并",
+        selectable: true,
+      },
+      {
         id: "algorithmic-techniques.offline-processing",
         name: "离线处理",
         selectable: true,
@@ -90,6 +100,11 @@ const knowledgeTaxonomyDefinition = [
           {
             id: "algorithmic-techniques.offline-processing.mo-algorithm",
             name: "莫队算法",
+            selectable: true,
+          },
+          {
+            id: "algorithmic-techniques.offline-processing.parallel-binary-search",
+            name: "整体二分 / 并行二分",
             selectable: true,
           },
         ],
@@ -213,6 +228,11 @@ const knowledgeTaxonomyDefinition = [
       {
         id: "data-structure.heap",
         name: "堆与优先队列",
+        selectable: true,
+      },
+      {
+        id: "data-structure.cartesian-tree",
+        name: "笛卡尔树",
         selectable: true,
       },
       {
@@ -375,6 +395,11 @@ const knowledgeTaxonomyDefinition = [
         ],
       },
       {
+        id: "graph.two-sat",
+        name: "2-SAT",
+        selectable: true,
+      },
+      {
         id: "graph.shortest-path",
         name: "最短路",
         selectable: true,
@@ -397,6 +422,11 @@ const knowledgeTaxonomyDefinition = [
           {
             id: "graph.shortest-path.zero-one-bfs",
             name: "0-1 BFS",
+            selectable: true,
+          },
+          {
+            id: "graph.shortest-path.johnson",
+            name: "Johnson",
             selectable: true,
           },
         ],
@@ -443,6 +473,11 @@ const knowledgeTaxonomyDefinition = [
           {
             id: "graph.network-flow.maximum-flow",
             name: "最大流",
+            selectable: true,
+          },
+          {
+            id: "graph.network-flow.minimum-cut",
+            name: "最小割",
             selectable: true,
           },
           {
@@ -547,6 +582,11 @@ const knowledgeTaxonomyDefinition = [
         selectable: true,
       },
       {
+        id: "dynamic-programming.state-machine",
+        name: "状态机 DP",
+        selectable: true,
+      },
+      {
         id: "dynamic-programming.grid",
         name: "网格 DP",
         selectable: true,
@@ -604,6 +644,13 @@ const knowledgeTaxonomyDefinition = [
         id: "dynamic-programming.tree",
         name: "树形 DP",
         selectable: true,
+        children: [
+          {
+            id: "dynamic-programming.tree.rerooting",
+            name: "换根 DP",
+            selectable: true,
+          },
+        ],
       },
       {
         id: "dynamic-programming.directed-acyclic-graph",
@@ -636,6 +683,11 @@ const knowledgeTaxonomyDefinition = [
             selectable: true,
           },
         ],
+      },
+      {
+        id: "dynamic-programming.probability",
+        name: "概率 DP",
+        selectable: true,
       },
       {
         id: "dynamic-programming.expected-value",
@@ -745,6 +797,11 @@ const knowledgeTaxonomyDefinition = [
           {
             id: "math.number-theory.chinese-remainder-theorem",
             name: "中国剩余定理",
+            selectable: true,
+          },
+          {
+            id: "math.number-theory.mobius-inversion",
+            name: "Möbius 反演",
             selectable: true,
           },
         ],
@@ -1115,4 +1172,3 @@ export const knowledgeTaxonomy = defineKnowledgeTaxonomy(
 );
 
 export const knowledgeCatalog = createKnowledgeCatalog(knowledgeTaxonomy);
-
