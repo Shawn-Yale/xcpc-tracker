@@ -23,7 +23,7 @@ export const reviewCompletionInputSchema = z
     date: dateOnlySchema,
     newStatus: statusSchema,
     durationMinutes: positiveIntegerSchema.nullable().optional(),
-    note: z.string().trim().min(1, "Review note is required"),
+    note: z.string().trim().min(1, "请填写复习记录"),
     scheduleNext: z.boolean(),
     nextIntervalDays: positiveIntegerSchema.nullable().optional(),
   })
@@ -31,7 +31,7 @@ export const reviewCompletionInputSchema = z
     if (!input.scheduleNext && input.nextIntervalDays != null) {
       context.addIssue({
         code: "custom",
-        message: "An interval cannot be set when the next Review is disabled",
+        message: "未安排下一次复习时不能设置间隔",
         path: ["nextIntervalDays"],
       });
     }
@@ -64,11 +64,11 @@ export function completeReview(
   const lastReview = problem.reviews.at(-1);
 
   if (compareDateOnly(validated.date, problem.solvedAt) < 0) {
-    throw new RangeError("Review date cannot be earlier than the solved date");
+    throw new RangeError("复习日期不能早于完成日期");
   }
 
   if (lastReview && compareDateOnly(validated.date, lastReview.date) < 0) {
-    throw new RangeError("Review date cannot be earlier than existing Review History");
+    throw new RangeError("复习日期不能早于已有复习记录");
   }
 
   const nextIntervalDays = validated.scheduleNext

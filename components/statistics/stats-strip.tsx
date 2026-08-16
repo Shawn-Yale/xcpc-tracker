@@ -2,13 +2,13 @@ import type { ProblemStats } from "@/lib/statistics/problem-stats";
 
 export function StatsStrip({ stats }: { stats: ProblemStats }) {
   const metrics = [
-    ["Total", stats.total],
+    ["总题数", stats.total],
     ["A", stats.statusCounts.A],
     ["B", stats.statusCounts.B],
     ["C", stats.statusCounts.C],
     ["D", stats.statusCounts.D],
-    ["Mastered", stats.mastered],
-    ["Mastery", `${stats.masteryRate.toFixed(0)}%`],
+    ["已掌握", stats.mastered],
+    ["掌握率", `${stats.masteryRate.toFixed(0)}%`],
   ] as const;
 
   return (

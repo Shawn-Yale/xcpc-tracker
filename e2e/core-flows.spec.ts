@@ -6,7 +6,7 @@ const readOnlyRoutes = [
   ["/problems", "题目库"],
   ["/knowledge", "知识分类"],
   ["/status", "掌握状态"],
-  ["/review", "Review 队列"],
+  ["/review", "复习队列"],
   ["/statistics", "统计分析"],
 ] as const;
 
@@ -53,7 +53,7 @@ test("top-level routes render without page-level overflow", async ({ page }) => 
   }
 });
 
-test("Dashboard prioritizes Today actions without repeating hero mastery", async ({ page }) => {
+test("概览 prioritizes today actions without repeating hero mastery", async ({ page }) => {
   await page.goto("/");
 
   const hero = page.locator("main header");
@@ -62,20 +62,20 @@ test("Dashboard prioritizes Today actions without repeating hero mastery", async
   });
   const progress = page.locator('section[aria-labelledby="mastery-title"]');
   const metricGroups = actionSummary.locator("dl > div");
-  const todayMetric = metricGroups.filter({ hasText: /Today/i });
-  const overdueMetric = metricGroups.filter({ hasText: /overdue/i });
-  const upcomingMetric = metricGroups.filter({ hasText: /next 7 days/i });
+  const todayMetric = metricGroups.filter({ hasText: /今天/ });
+  const overdueMetric = metricGroups.filter({ hasText: /已逾期/ });
+  const upcomingMetric = metricGroups.filter({ hasText: /未来 7 天/ });
 
-  await expect(hero.getByText("Mastery Rate", { exact: true })).toHaveCount(0);
+  await expect(hero.getByText("掌握率", { exact: true })).toHaveCount(0);
   await expect(actionSummary).toBeVisible();
-  await expect(todayMetric.getByText("Today", { exact: true })).toBeVisible();
+  await expect(todayMetric.getByText("今天", { exact: true })).toBeVisible();
   await expect(todayMetric.locator("dd")).toContainText(/^\d+\s*待复习$/);
-  await expect(overdueMetric.getByText("overdue", { exact: true })).toBeVisible();
+  await expect(overdueMetric.getByText("已逾期", { exact: true })).toBeVisible();
   await expect(overdueMetric.locator("dd")).toHaveText(/^\d+$/);
-  await expect(upcomingMetric.getByText("next 7 days", { exact: true })).toBeVisible();
+  await expect(upcomingMetric.getByText("未来 7 天", { exact: true })).toBeVisible();
   await expect(upcomingMetric.locator("dd")).toHaveText(/^\d+$/);
   await expect(progress.getByRole("heading", { name: "总体掌握进度" })).toBeVisible();
-  await expect(progress.locator('[role="img"][aria-label^="Mastery rate"]')).toBeVisible();
+  await expect(progress.locator('[role="img"][aria-label^="掌握率"]')).toBeVisible();
 
   const layout = await page.evaluate(() => {
     const heroElement = document.querySelector("main header");
@@ -109,7 +109,7 @@ test("Dashboard prioritizes Today actions without repeating hero mastery", async
 
 test("primary navigation and skip link work with the keyboard", async ({ page }) => {
   const navigation = page.getByRole("navigation", {
-    name: "Primary navigation",
+    name: "主导航",
   });
 
   await page.goto("/");
@@ -118,24 +118,24 @@ test("primary navigation and skip link work with the keyboard", async ({ page })
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
 
-  await page.getByRole("link", { name: "Problems" }).focus();
+  await navigation.getByRole("link", { name: "题目", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/problems$/);
-  await expect(page.getByRole("link", { name: "Problems" })).toHaveAttribute(
+  await expect(navigation.getByRole("link", { name: "题目", exact: true })).toHaveAttribute(
     "aria-current",
     "page",
   );
 
   await page.keyboard.press("Tab");
-  await expect(navigation.getByRole("link", { name: "Knowledge" })).toBeFocused();
+  await expect(navigation.getByRole("link", { name: "知识" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(navigation.getByRole("link", { name: "Status" })).toBeFocused();
+  await expect(navigation.getByRole("link", { name: "状态" })).toBeFocused();
   await page.keyboard.press("Tab");
-  const reviewLink = navigation.getByRole("link", { name: "Review" });
+  const reviewLink = navigation.getByRole("link", { name: "复习" });
   await expect(reviewLink).toBeFocused();
   await expectFullyWithin(navigation, reviewLink);
   await page.keyboard.press("Tab");
-  const statisticsLink = navigation.getByRole("link", { name: "Statistics" });
+  const statisticsLink = navigation.getByRole("link", { name: "统计" });
   await expect(statisticsLink).toBeFocused();
   await expectFullyWithin(navigation, statisticsLink);
   await page.keyboard.press("Shift+Tab");
@@ -151,7 +151,7 @@ test("primary navigation keeps the current item within its viewport", async ({
   page,
 }, testInfo) => {
   const navigation = page.getByRole("navigation", {
-    name: "Primary navigation",
+    name: "主导航",
   });
   const currentLink = () => navigation.locator('a[aria-current="page"]');
 
@@ -168,8 +168,8 @@ test("primary navigation keeps the current item within its viewport", async ({
   }
 
   for (const [route, label] of [
-    ["/review", "Review"],
-    ["/statistics", "Statistics"],
+    ["/review", "复习"],
+    ["/statistics", "统计"],
   ] as const) {
     await page.goto(route);
     await expect(currentLink()).toHaveText(label);
@@ -178,11 +178,11 @@ test("primary navigation keeps the current item within its viewport", async ({
 
   await page.goto("/");
   expect(await navigation.evaluate((element) => element.scrollLeft)).toBe(0);
-  await page.getByRole("link", { name: "开始 Review" }).click();
+  await page.getByRole("link", { name: "开始复习" }).click();
   await expect(page).toHaveURL(/\/review$/);
   await expectFullyWithin(navigation, currentLink());
 
-  await navigation.getByRole("link", { name: "Statistics" }).click();
+  await navigation.getByRole("link", { name: "统计" }).click();
   await expect(page).toHaveURL(/\/statistics$/);
   await expectFullyWithin(navigation, currentLink());
 
@@ -190,7 +190,7 @@ test("primary navigation keeps the current item within its viewport", async ({
   await navigation.evaluate((element) => {
     element.scrollLeft = element.scrollWidth;
   });
-  await navigation.getByRole("link", { name: "Statistics" }).click();
+  await navigation.getByRole("link", { name: "统计" }).click();
   await expect(page).toHaveURL(/\/statistics$/);
   await expectFullyWithin(navigation, currentLink());
 
@@ -203,10 +203,10 @@ test("primary navigation keeps the current item within its viewport", async ({
   await expectFullyWithin(navigation, currentLink());
 
   for (const [route, label] of [
-    ["/problems/e2e-dijkstra", "Problems"],
-    ["/knowledge/graph/shortest-path/dijkstra", "Knowledge"],
-    ["/status/C", "Status"],
-    ["/review/e2e-dijkstra", "Review"],
+    ["/problems/e2e-dijkstra", "题目"],
+    ["/knowledge/graph/shortest-path/dijkstra", "知识"],
+    ["/status/C", "状态"],
+    ["/review/e2e-dijkstra", "复习"],
   ] as const) {
     await page.goto(route);
     await expect(currentLink()).toHaveText(label);
@@ -450,13 +450,13 @@ test("create form exposes safe client-side interactions", async ({ page }) => {
   await page.goto("/problems/new");
   await expect(page.getByRole("heading", { level: 1, name: "新增题目" })).toBeVisible();
   await page.getByLabel("标题 *").fill("Smoke Test Problem");
-  await page.getByLabel("Contest").fill("Round 100");
+  await page.getByLabel("比赛").fill("Round 100");
   await page.getByLabel("题号").fill("A");
   await expect(page.getByLabel("稳定 ID *")).toHaveValue(
     "codeforces-round-100-a",
   );
-  await page.getByLabel("安排下一次 Review").check();
-  await expect(page.getByLabel("下次 Review 日期")).toBeEnabled();
+  await page.getByLabel("安排下一次复习").check();
+  await expect(page.getByLabel("下次复习日期")).toBeEnabled();
   await expect(page.getByLabel("间隔天数")).toBeEnabled();
   await page.getByLabel("搜索知识点").fill("Bellman");
   await page.getByLabel("Bellman–Ford", { exact: true }).check();
@@ -582,7 +582,7 @@ test("hierarchical Knowledge navigation resolves canonical paths", async ({
   await expect(page.locator('a:visible[href="/problems/e2e-dijkstra"]')).toBeVisible();
 
   await page.goto("/knowledge/not/a/real/node");
-  await expect(page.getByRole("heading", { name: "Knowledge node not found" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "找不到知识点" })).toBeVisible();
 });
 
 test("Statistics Knowledge mastery filters and expands one taxonomy level at a time", async ({
@@ -598,8 +598,8 @@ test("Statistics Knowledge mastery filters and expands one taxonomy level at a t
     "false",
   );
 
-  const directHelp = page.getByRole("button", { name: "说明 Direct" });
-  const rollupHelp = page.getByRole("button", { name: "说明 Rollup" });
+  const directHelp = page.getByRole("button", { name: "说明 直接统计" });
+  const rollupHelp = page.getByRole("button", { name: "说明 汇总统计" });
   const directExplanation = page.getByRole("note").filter({
     hasText: "仅统计直接归类到当前知识节点的题目。",
   });
@@ -704,18 +704,18 @@ test("review contexts protect Knowledge until a temporary reveal", async ({
   await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
   await expect(reviewKnowledge).toContainText("知识点已隐藏");
   await expect(reviewKnowledge.getByText("Dijkstra", { exact: true })).toHaveCount(0);
-  await expect(reviewTask.getByRole("link", { name: "完成 Review" })).toBeVisible();
+  await expect(reviewTask.getByRole("link", { name: "完成复习" })).toBeVisible();
 
   if (testInfo.project.name === "desktop-chrome") {
     await reviewKnowledge.hover();
     await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
     await expect(reviewKnowledge.getByText("Dijkstra", { exact: true })).toBeVisible();
-    await page.getByRole("heading", { level: 1, name: "Review 队列" }).hover();
+    await page.getByRole("heading", { level: 1, name: "复习队列" }).hover();
     await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
 
     await reviewKnowledge.click();
     await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
-    await page.getByRole("heading", { level: 1, name: "Review 队列" }).hover();
+    await page.getByRole("heading", { level: 1, name: "复习队列" }).hover();
     await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
 
     await reviewKnowledge.click();
@@ -759,7 +759,7 @@ test("review contexts protect Knowledge until a temporary reveal", async ({
   await expect(dashboardKnowledge.getByText("线性 DP", { exact: true })).toHaveCount(0);
   await dashboardKnowledge.click();
   await expect(dashboardKnowledge.getByText("线性 DP", { exact: true })).toBeVisible();
-  await expect(dashboardTask.getByRole("link", { name: "完成 Review" })).toBeVisible();
+  await expect(dashboardTask.getByRole("link", { name: "完成复习" })).toBeVisible();
   await dashboardKnowledge.click();
   await expect(dashboardKnowledge).toHaveAttribute("aria-expanded", "false");
   if (dashboardTaskHeight != null) {

@@ -87,8 +87,8 @@ describe("KnowledgeStatisticsTable initial presentation", () => {
       }),
     );
 
-    expect(markup).toContain('aria-label="说明 Direct"');
-    expect(markup).toContain('aria-label="说明 Rollup"');
+    expect(markup).toContain('aria-label="说明 直接统计"');
+    expect(markup).toContain('aria-label="说明 汇总统计"');
     expect(markup.match(/aria-expanded="false"/g)).toHaveLength(2);
   });
 });

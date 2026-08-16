@@ -5,7 +5,7 @@ import type { RecentReviewActivity } from "@/lib/dashboard/summary";
 
 export function RecentReviewList({ activity }: { activity: readonly RecentReviewActivity[] }) {
   if (activity.length === 0) {
-    return <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">完成第一次 Review 后，状态变化会显示在这里。</p>;
+    return <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">完成第一次复习后，状态变化会显示在这里。</p>;
   }
 
   return (

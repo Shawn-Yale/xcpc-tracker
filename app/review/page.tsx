@@ -7,7 +7,7 @@ import { toLocalDateOnly } from "@/lib/date/local-date";
 import { createProblemRepository } from "@/lib/problems/repository";
 import { getReviewQueue } from "@/lib/review/queue";
 
-export const metadata: Metadata = { title: "Review" };
+export const metadata: Metadata = { title: "复习" };
 export const dynamic = "force-dynamic";
 
 type ReviewPageProps = {
@@ -28,14 +28,11 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     <div className="space-y-10">
       <header className="flex flex-col gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-            Spaced repetition
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-            Review 队列
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            复习队列
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            到期日期不会随页面访问自动移动；只有完成 Review 后才会追加记录并重新排期。
+            到期日期不会随页面访问自动移动；只有完成复习后才会追加记录并重新排期。
           </p>
         </div>
         <div className="border-l-4 border-sky-700 pl-4">
@@ -46,7 +43,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       {query.completed ? (
         <div aria-live="polite" className="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">
-          Review 已保存，状态与下一次排期已经更新。
+          复习已保存，状态与下一次排期已经更新。
         </div>
       ) : null}
 
@@ -63,7 +60,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       <section aria-labelledby="overdue-title">
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-xl font-semibold text-rose-800" id="overdue-title">Overdue</h2>
+          <h2 className="text-xl font-semibold text-rose-800" id="overdue-title">已逾期</h2>
           <span className="font-mono text-sm text-slate-500">{queue.overdue.length}</span>
         </div>
         <ReviewTaskList emptyMessage="没有逾期任务。" problems={queue.overdue} protectKnowledge today={today} />
@@ -71,18 +68,18 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       <section aria-labelledby="today-title">
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-xl font-semibold text-slate-950" id="today-title">Today</h2>
+          <h2 className="text-xl font-semibold text-slate-950" id="today-title">今天</h2>
           <span className="font-mono text-sm text-slate-500">{queue.today.length}</span>
         </div>
-        <ReviewTaskList emptyMessage="今天没有计划中的 Review。" problems={queue.today} protectKnowledge today={today} />
+        <ReviewTaskList emptyMessage="今天没有计划中的复习。" problems={queue.today} protectKnowledge today={today} />
       </section>
 
       <section aria-labelledby="upcoming-title">
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-xl font-semibold text-slate-950" id="upcoming-title">Upcoming · 未来 7 天</h2>
+          <h2 className="text-xl font-semibold text-slate-950" id="upcoming-title">未来 7 天</h2>
           <span className="font-mono text-sm text-slate-500">{queue.upcoming.length}</span>
         </div>
-        <ReviewTaskList emptyMessage="未来 7 天没有已安排的 Review。" problems={queue.upcoming} protectKnowledge today={today} />
+        <ReviewTaskList emptyMessage="未来 7 天没有已安排的复习。" problems={queue.upcoming} protectKnowledge today={today} />
       </section>
     </div>
   );

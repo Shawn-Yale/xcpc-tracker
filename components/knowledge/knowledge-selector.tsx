@@ -77,7 +77,7 @@ export function KnowledgeSelector({ initial }: { initial: readonly KnowledgeId[]
         <input
           className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 font-normal focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="输入名称或 breadcrumb"
+          placeholder="输入名称或层级路径"
           type="search"
           value={search}
         />

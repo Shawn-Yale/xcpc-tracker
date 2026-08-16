@@ -10,7 +10,7 @@ export function BacklogList({ problems, today }: { problems: readonly ProblemFil
   if (problems.length === 0) {
     return (
       <div className="border-l-4 border-emerald-200 bg-emerald-50 px-4 py-3">
-        <p className="font-semibold text-emerald-900">当前没有 C/D Backlog</p>
+        <p className="font-semibold text-emerald-900">当前没有 C/D 待加强题目</p>
         <p className="mt-1 text-sm text-emerald-800">所有题目都已进入 A/B 掌握池，保持节奏即可。</p>
       </div>
     );

@@ -6,7 +6,7 @@ import { ProblemEditorForm } from "@/components/problems/problem-editor-form";
 import { problemEditorSchema } from "@/lib/problems/editor";
 import { createProblemRepository } from "@/lib/problems/repository";
 
-export const metadata: Metadata = { title: "Edit Problem" };
+export const metadata: Metadata = { title: "编辑题目" };
 export const dynamic = "force-dynamic";
 
 type EditProblemPageProps = {
@@ -50,9 +50,8 @@ export default async function EditProblemPage({ params }: EditProblemPageProps) 
         ← 返回题目详情
       </Link>
       <header className="mt-6 border-b border-slate-200 pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Edit record</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">编辑题目</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">更新结构化字段或 Markdown 正文。稳定 ID 与既有 Review History 不可通过此表单修改。</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">编辑题目</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">更新结构化字段或 Markdown 正文。稳定 ID 与既有复习记录不可通过此表单修改。</p>
       </header>
       <div className="py-8">
         <ProblemEditorForm initial={initial} mode="edit" />

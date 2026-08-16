@@ -123,21 +123,21 @@ export function KnowledgeStatisticsTable({ rows }: { rows: readonly KnowledgeSta
         <div aria-label="知识统计，可横向滚动" className="overflow-x-auto border border-slate-200 bg-white" role="region" tabIndex={0}>
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
             <thead className="bg-slate-100/80 text-xs uppercase tracking-wide text-slate-600"><tr>
-              <th className="min-w-72 px-4 py-3 font-semibold" scope="col">Knowledge</th>
+              <th className="min-w-72 px-4 py-3 font-semibold" scope="col">知识点</th>
               <th className="px-3 py-3 text-right font-semibold" scope="col">
-                Direct
-                <ColumnExplanation label="Direct">
+                直接统计
+                <ColumnExplanation label="直接统计">
                   仅统计直接归类到当前知识节点的题目。
                 </ColumnExplanation>
               </th>
               <th className="px-3 py-3 text-right font-semibold" scope="col">
-                Rollup
-                <ColumnExplanation label="Rollup">
+                汇总统计
+                <ColumnExplanation label="汇总统计">
                   统计当前节点及其所有下级知识节点中的题目；同一道题在当前节点下只计一次。
                 </ColumnExplanation>
               </th>
               {(["A", "B", "C", "D"] as const).map((status) => <th className="px-3 py-3 text-right font-semibold" key={status} scope="col">{status}</th>)}
-              <th className="px-4 py-3 text-right font-semibold" scope="col">Mastery</th>
+              <th className="px-4 py-3 text-right font-semibold" scope="col">掌握率</th>
             </tr></thead>
             <tbody className="divide-y divide-slate-200">
               {visibleRows.map(({ entry, statistics, matched, hasRetainedChildren }) => {

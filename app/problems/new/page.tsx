@@ -9,7 +9,7 @@ import {
   type ProblemEditorInput,
 } from "@/lib/problems/editor";
 
-export const metadata: Metadata = { title: "New Problem" };
+export const metadata: Metadata = { title: "新增题目" };
 export const dynamic = "force-dynamic";
 
 export default function NewProblemPage() {
@@ -40,9 +40,8 @@ export default function NewProblemPage() {
         ← 返回题目库
       </Link>
       <header className="mt-6 border-b border-slate-200 pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">New record</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">新增题目</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">记录首次训练结果、知识标签、Review 排期与 Markdown 复盘。保存前请确认稳定 ID。</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">新增题目</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">记录首次训练结果、知识标签、复习排期与 Markdown 复盘。保存前请确认稳定 ID。</p>
       </header>
       <div className="py-8">
         <ProblemEditorForm initial={initial} mode="create" />

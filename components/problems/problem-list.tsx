@@ -84,28 +84,28 @@ export function ProblemList({
             <thead className="bg-slate-100/80 text-xs uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-5 py-3 font-semibold" scope="col">
-                  Problem
+                  题目
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
-                  Platform
+                  平台
                 </th>
                 <th className="px-3 py-3 text-right font-semibold" scope="col">
-                  Rating
+                  难度
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
-                  Solved
+                  完成日期
                 </th>
                 <th className="px-3 py-3 text-center font-semibold" scope="col">
-                  Status
+                  状态
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
-                  Knowledge
+                  知识点
                 </th>
                 <th className="px-3 py-3 font-semibold" scope="col">
-                  Tags
+                  标签
                 </th>
                 <th className="px-5 py-3 font-semibold" scope="col">
-                  Next Review
+                  下次复习
                 </th>
               </tr>
             </thead>
@@ -170,7 +170,7 @@ export function ProblemList({
 
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-xs text-slate-500">Rating</dt>
+                <dt className="text-xs text-slate-500">难度</dt>
                 <dd className="mt-0.5 font-mono text-slate-800">
                   {problem.frontmatter.rating ?? "—"}
                 </dd>
@@ -182,7 +182,7 @@ export function ProblemList({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">下次 Review</dt>
+                <dt className="text-xs text-slate-500">下次复习</dt>
                 <dd className="mt-0.5 font-mono text-xs">
                   <ReviewDate
                     date={problem.frontmatter.nextReviewDate}

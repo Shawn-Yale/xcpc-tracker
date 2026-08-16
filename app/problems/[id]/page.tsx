@@ -35,19 +35,16 @@ export async function generateMetadata({
 
   try {
     const problem = await loadProblem(id);
-    return { title: problem?.frontmatter.title ?? "Problem not found" };
+    return { title: problem?.frontmatter.title ?? "找不到题目" };
   } catch {
-    return { title: "Problem data error" };
+    return { title: "题目数据错误" };
   }
 }
 
 function DataError({ error }: { error: ProblemDataError }) {
   return (
     <div className="mx-auto max-w-2xl border border-rose-200 bg-rose-50 px-6 py-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">
-        Problem data error
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold text-rose-950">题目数据无法载入</h1>
+      <h1 className="text-2xl font-semibold text-rose-950">题目数据无法载入</h1>
       <p className="mt-3 text-sm leading-6 text-rose-800">{error.message}</p>
       {error.fileName ? (
         <p className="mt-3 text-sm text-rose-800">
@@ -152,7 +149,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
           </span>
           {frontmatter.rating != null ? (
             <span className="font-mono text-sm text-slate-500">
-              Rating {frontmatter.rating}
+              难度 {frontmatter.rating}
             </span>
           ) : null}
         </div>
@@ -182,13 +179,10 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
       <div className="grid gap-10 py-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="retrospective-title">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
-              Retrospective
-            </p>
             <h2 className="sr-only" id="retrospective-title">
               题目复盘
             </h2>
-            <div className="mt-4">
+            <div>
               <MarkdownContent content={content} />
             </div>
             {frontmatter.solutionLanguage != null &&
@@ -224,7 +218,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
           <section aria-labelledby="review-history-title" className="border-t border-slate-200 pt-8">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xl font-semibold text-slate-950" id="review-history-title">
-                Review History
+                复习记录
               </h2>
               <span className="text-sm text-slate-500">
                 {frontmatter.reviews.length} 次记录
@@ -233,7 +227,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
 
             {frontmatter.reviews.length === 0 ? (
               <p className="mt-4 border-l-4 border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                暂无 Review History。
+                暂无复习记录。
               </p>
             ) : (
               <ol className="mt-5 space-y-4">
@@ -293,13 +287,13 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
 
           <section aria-labelledby="knowledge-title">
             <h2 className="text-sm font-semibold text-slate-950" id="knowledge-title">
-              Knowledge
+              知识点
             </h2>
             <div className="mt-3">
               <KnowledgeDetailTags ids={frontmatter.knowledge} />
             </div>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Tags
+              标签
             </h3>
             <div className="mt-2">
               <DetailTags values={frontmatter.tags} />
@@ -308,7 +302,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
 
           <section aria-labelledby="review-title">
             <h2 className="text-sm font-semibold text-slate-950" id="review-title">
-              Review
+              复习
             </h2>
             <div className="mt-3 border-y border-slate-200 py-3 text-sm">
               <ReviewDate date={frontmatter.nextReviewDate} today={today} />
@@ -322,7 +316,7 @@ export default async function ProblemDetailPage({ params, searchParams }: Proble
               className="mt-3 inline-flex rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800"
               href={`/review/${frontmatter.id}`}
             >
-              完成 Review
+              完成复习
             </Link>
           </section>
         </aside>

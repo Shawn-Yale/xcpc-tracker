@@ -10,7 +10,7 @@ const statusStyles: Record<Status, string> = {
 export function StatusBadge({ status }: { status: Status }) {
   return (
     <span
-      aria-label={`Status ${status}`}
+      aria-label={`状态 ${status}`}
       className={`inline-flex min-w-7 items-center justify-center rounded-md px-2 py-1 text-xs font-bold ring-1 ring-inset ${statusStyles[status]}`}
     >
       {status}

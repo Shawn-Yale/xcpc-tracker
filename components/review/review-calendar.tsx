@@ -22,10 +22,7 @@ export function ReviewCalendar({ problems, today }: ReviewCalendarProps) {
     <section aria-labelledby="review-calendar-title">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-            Schedule
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950" id="review-calendar-title">
+          <h2 className="text-xl font-semibold text-slate-950" id="review-calendar-title">
             8 日复习日历
           </h2>
         </div>
@@ -58,7 +55,7 @@ export function ReviewCalendar({ problems, today }: ReviewCalendarProps) {
               >
                 {count}
               </p>
-              <p className="text-[11px] text-slate-600">tasks</p>
+              <p className="text-[11px] text-slate-600">项</p>
             </div>
           );
         })}

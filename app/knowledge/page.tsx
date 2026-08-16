@@ -8,7 +8,7 @@ import { getKnowledgeHref } from "@/lib/knowledge/routing";
 import { createProblemRepository } from "@/lib/problems/repository";
 import { getKnowledgeStats, getProblemStats } from "@/lib/statistics/problem-stats";
 
-export const metadata: Metadata = { title: "Knowledge" };
+export const metadata: Metadata = { title: "知识" };
 export const dynamic = "force-dynamic";
 
 export default async function KnowledgePage() {
@@ -21,10 +21,7 @@ export default async function KnowledgePage() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-          Knowledge map
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           知识分类
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">

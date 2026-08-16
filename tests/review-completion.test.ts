@@ -150,7 +150,7 @@ describe("completeReview", () => {
         note: "Too early",
         scheduleNext: true,
       }),
-    ).toThrow("solved date");
+    ).toThrow("完成日期");
     expect(() =>
       completeReview(makeProblem(), {
         date: "2026-08-02",
@@ -158,7 +158,7 @@ describe("completeReview", () => {
         note: "Before history",
         scheduleNext: true,
       }),
-    ).toThrow("Review History");
+    ).toThrow("复习记录");
     expect(() =>
       completeReview(makeProblem(), {
         date: "2026-08-10",
@@ -167,6 +167,6 @@ describe("completeReview", () => {
         scheduleNext: false,
         nextIntervalDays: 3,
       }),
-    ).toThrow("interval cannot be set");
+    ).toThrow("不能设置间隔");
   });
 });

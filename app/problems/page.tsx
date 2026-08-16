@@ -8,7 +8,7 @@ import { toLocalDateOnly } from "@/lib/date/local-date";
 import { parseProblemQuery, queryProblems } from "@/lib/problems/query";
 import { createProblemRepository } from "@/lib/problems/repository";
 
-export const metadata: Metadata = { title: "Problems" };
+export const metadata: Metadata = { title: "题目" };
 export const dynamic = "force-dynamic";
 
 type ProblemsPageProps = {
@@ -29,10 +29,7 @@ export default async function ProblemsPage({ searchParams }: ProblemsPageProps) 
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-            Problem library
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
             题目库
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
@@ -59,9 +56,9 @@ export default async function ProblemsPage({ searchParams }: ProblemsPageProps) 
 
       {query.knowledge.state === "invalid" ? (
         <section className="border border-rose-200 bg-rose-50 px-5 py-4" role="alert">
-          <h2 className="font-semibold text-rose-900">Invalid / unknown knowledge filter</h2>
+          <h2 className="font-semibold text-rose-900">无法识别知识点筛选</h2>
           <p className="mt-1 text-sm text-rose-800">
-            无法识别筛选值：<code>{query.knowledge.rawValue || "(empty)"}</code>
+            无法识别筛选值：<code>{query.knowledge.rawValue || "（空）"}</code>
           </p>
           <Link className="mt-3 inline-flex text-sm font-semibold text-rose-900 underline" href="/problems">
             清除筛选
@@ -73,7 +70,7 @@ export default async function ProblemsPage({ searchParams }: ProblemsPageProps) 
         <section className="border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
           <h2 className="text-lg font-semibold text-slate-900">暂时没有题目</h2>
           <p className="mt-2 text-sm text-slate-600">
-            创建第一道题目后，符合 Schema 的 Markdown 文件会出现在 data/problems。
+            创建第一道题目后，符合格式要求的 Markdown 文件会出现在 data/problems。
           </p>
           <Link className="mt-5 inline-flex rounded-md bg-sky-800 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700" href="/problems/new">新增题目</Link>
         </section>

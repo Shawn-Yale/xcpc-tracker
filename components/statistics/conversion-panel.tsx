@@ -15,7 +15,7 @@ export function ConversionPanel({
   reviewCount: number;
 }) {
   if (reviewCount === 0) {
-    return <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">暂无 Review History，完成复习后才能计算长期转化。</p>;
+    return <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">暂无复习记录，完成复习后才能计算长期转化。</p>;
   }
 
   return (
@@ -37,10 +37,10 @@ export function ConversionPanel({
         tabIndex={0}
       >
         <table className="w-full min-w-[480px] border-collapse text-center text-sm">
-          <caption className="px-4 py-3 text-left text-xs text-slate-500">状态转换矩阵 · {reviewCount} 次 Review 事件</caption>
+          <caption className="px-4 py-3 text-left text-xs text-slate-500">状态转换矩阵 · {reviewCount} 次复习</caption>
           <thead className="bg-slate-100/80">
             <tr>
-              <th className="px-3 py-3 text-left text-xs font-semibold uppercase text-slate-600" scope="col">From \ To</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600" scope="col">从 \ 到</th>
               {statusValues.map((status) => <th className="px-3 py-3" key={status} scope="col"><StatusBadge status={status} /></th>)}
             </tr>
           </thead>

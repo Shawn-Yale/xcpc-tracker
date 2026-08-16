@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     ? `先完成最早逾期的任务，把 ${reviewQueue.overdue.length} 道欠账逐步清零。`
     : reviewQueue.today.length > 0
       ? `今天有 ${reviewQueue.today.length} 道题等待复习，专注完成即可。`
-      : "今天没有到期任务，可以巩固 Backlog 或开始一道新题。";
+      : "今天没有到期任务，可以巩固待加强题目或开始一道新题。";
 
   return (
     <div className="space-y-10">
@@ -32,9 +32,8 @@ export default async function DashboardPage() {
 
       {problems.length === 0 ? (
         <section className="border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Start here</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">建立第一条训练记录</h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600">新增题目后，这里会自动汇总 Review 任务、掌握率、训练动态和 C/D Backlog。</p>
+          <h2 className="text-2xl font-semibold text-slate-950">建立第一条训练记录</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600">新增题目后，这里会自动汇总复习任务、掌握率、训练动态和 C/D 待加强题目。</p>
           <Link className="mt-6 inline-flex rounded-md bg-sky-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-700" href="/problems/new">新增第一道题</Link>
         </section>
       ) : (
@@ -46,8 +45,7 @@ export default async function DashboardPage() {
           <section aria-labelledby="backlog-title">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Next gains</p>
-                <h2 className="mt-1 text-xl font-semibold text-slate-950" id="backlog-title">C/D Backlog</h2>
+                <h2 className="text-xl font-semibold text-slate-950" id="backlog-title">C/D 待加强题目</h2>
                 <p className="mt-2 text-sm text-slate-600">优先显示 D 与未排期题目，把薄弱点变成下一步行动。</p>
               </div>
               <div className="flex gap-3 text-sm font-semibold">
@@ -61,22 +59,21 @@ export default async function DashboardPage() {
 
           <section aria-labelledby="activity-title">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Momentum</p>
-              <h2 className="mt-1 text-xl font-semibold text-slate-950" id="activity-title">最近训练动态</h2>
-              <p className="mt-2 text-sm text-slate-600">新增以 solvedAt 为准；复习动态直接来自不可变 Review History。</p>
+              <h2 className="text-xl font-semibold text-slate-950" id="activity-title">最近训练动态</h2>
+              <p className="mt-2 text-sm text-slate-600">新增按完成日期统计；复习动态直接来自不可变的复习记录。</p>
             </div>
             <div className="mt-5 grid gap-8 lg:grid-cols-2">
               <div>
                 <div className="mb-3 flex items-baseline justify-between">
-                  <h3 className="font-semibold text-slate-950">Recent Solved</h3>
+                  <h3 className="font-semibold text-slate-950">最近完成</h3>
                   <Link className="text-xs font-semibold text-sky-800 hover:underline" href="/problems?sort=solvedAt&direction=desc">全部题目 →</Link>
                 </div>
                 <RecentSolvedList problems={summary.recentSolved} />
               </div>
               <div>
                 <div className="mb-3 flex items-baseline justify-between">
-                  <h3 className="font-semibold text-slate-950">Recent Reviews</h3>
-                  <Link className="text-xs font-semibold text-sky-800 hover:underline" href="/review">Review 队列 →</Link>
+                  <h3 className="font-semibold text-slate-950">最近复习</h3>
+                  <Link className="text-xs font-semibold text-sky-800 hover:underline" href="/review">复习队列 →</Link>
                 </div>
                 <RecentReviewList activity={summary.recentReviews} />
               </div>

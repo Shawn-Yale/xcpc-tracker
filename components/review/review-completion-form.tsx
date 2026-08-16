@@ -49,7 +49,7 @@ export function ReviewCompletionForm({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block text-sm font-semibold text-slate-800">
-          Review 日期
+          复习日期
           <input
             className="mt-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
             defaultValue={defaultDate}
@@ -116,13 +116,13 @@ export function ReviewCompletionForm({
           type="checkbox"
         />
         <span>
-          <span className="block font-semibold text-slate-900">继续安排下一次 Review</span>
+          <span className="block font-semibold text-slate-900">继续安排下一次复习</span>
           取消后会清空下一日期和间隔，但仍保留本次及全部历史记录。
         </span>
       </label>
 
       <label className="block text-sm font-semibold text-slate-800">
-        Review 记录
+        复习记录
         <textarea
           className="mt-2 block min-h-32 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm leading-6 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200"
           name="note"
@@ -136,7 +136,7 @@ export function ReviewCompletionForm({
         disabled={pending}
         type="submit"
       >
-        {pending ? "正在保存…" : "保存 Review"}
+        {pending ? "正在保存…" : "保存复习"}
       </button>
     </form>
   );

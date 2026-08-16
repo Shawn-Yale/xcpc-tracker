@@ -16,9 +16,8 @@ export function MasteryPanel({ stats }: { stats: ProblemStats }) {
     <section aria-labelledby="mastery-title">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Progress</p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950" id="mastery-title">总体掌握进度</h2>
-          <p className="mt-2 text-sm text-slate-600">A/B 计入 Mastered，进度来自全部有效题目。</p>
+          <h2 className="text-xl font-semibold text-slate-950" id="mastery-title">总体掌握进度</h2>
+          <p className="mt-2 text-sm text-slate-600">A/B 计入已掌握，进度来自全部有效题目。</p>
         </div>
         <div className="sm:text-right">
           <p className="font-mono text-4xl font-semibold tracking-tight text-slate-950 tabular-nums">{stats.masteryRate.toFixed(0)}%</p>
@@ -26,7 +25,7 @@ export function MasteryPanel({ stats }: { stats: ProblemStats }) {
         </div>
       </div>
 
-      <div aria-label={`Mastery rate ${stats.masteryRate.toFixed(0)}%`} className="mt-5 h-3 overflow-hidden rounded-full bg-slate-200" role="img">
+      <div aria-label={`掌握率 ${stats.masteryRate.toFixed(0)}%`} className="mt-5 h-3 overflow-hidden rounded-full bg-slate-200" role="img">
         <div className="h-full bg-gradient-to-r from-sky-600 to-emerald-500" style={{ width: `${stats.masteryRate}%` }} />
       </div>
 

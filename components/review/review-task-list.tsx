@@ -49,7 +49,7 @@ export function ReviewTaskList({
                 <div className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-slate-500">
                   <span>
                     {frontmatter.platform}
-                    {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
+                    {frontmatter.rating != null ? ` · 难度 ${frontmatter.rating}` : ""}
                   </span>
                   <span aria-hidden="true"> · </span>
                   <KnowledgeReveal>
@@ -59,7 +59,7 @@ export function ReviewTaskList({
               ) : (
                 <p className="mt-2 truncate text-xs text-slate-500">
                   {frontmatter.platform}
-                  {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
+                  {frontmatter.rating != null ? ` · 难度 ${frontmatter.rating}` : ""}
                   {frontmatter.knowledge.length > 0
                     ? ` · ${frontmatter.knowledge.map(getKnowledgeLabel).join(" · ")}`
                     : ""}
@@ -75,7 +75,7 @@ export function ReviewTaskList({
               className="inline-flex w-fit justify-center rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
               href={`/review/${frontmatter.id}`}
             >
-              完成 Review
+              完成复习
             </Link>
           </li>
         );

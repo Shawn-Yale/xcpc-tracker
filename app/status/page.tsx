@@ -9,7 +9,7 @@ import { createProblemRepository } from "@/lib/problems/repository";
 import { isMastered } from "@/lib/review/rules";
 import { getProblemStats } from "@/lib/statistics/problem-stats";
 
-export const metadata: Metadata = { title: "Status" };
+export const metadata: Metadata = { title: "状态" };
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {
@@ -19,10 +19,7 @@ export default async function StatusPage() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-          Mastery pools
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           掌握状态
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
@@ -53,14 +50,14 @@ export default async function StatusPage() {
                           className="hover:text-sky-800 hover:underline"
                           href={`/status/${status}`}
                         >
-                          Status {status}
+                          状态 {status}
                         </Link>
                       </h3>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
                         {statusMetadata[status].meaning}
                       </p>
                       <p className="mt-1 text-xs font-medium text-slate-500">
-                        {isMastered(status) ? "计入 Mastered" : "尚未计入 Mastered"}
+                        {isMastered(status) ? "计入已掌握" : "尚未计入已掌握"}
                       </p>
                     </div>
                   </div>

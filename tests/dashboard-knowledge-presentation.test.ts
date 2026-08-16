@@ -46,7 +46,7 @@ describe("dashboard knowledge presentation", () => {
 
     expectLeafLabelsOnly(markup);
     expect(markup).toContain('href="/problems/dashboard-taxonomy-labels"');
-    expect(markup).toContain('aria-label="Status D"');
+    expect(markup).toContain('aria-label="状态 D"');
     expect(markup).toContain("未安排");
   });
 
@@ -57,7 +57,7 @@ describe("dashboard knowledge presentation", () => {
 
     expectLeafLabelsOnly(markup);
     expect(markup).toContain('href="/problems/dashboard-taxonomy-labels"');
-    expect(markup).toContain('aria-label="Status D"');
+    expect(markup).toContain('aria-label="状态 D"');
     expect(markup).toContain('<time class="font-mono" dateTime="2026-08-12">2026-08-12</time>');
     expect(markup).toContain("Codeforces");
   });
@@ -74,7 +74,7 @@ describe("dashboard knowledge presentation", () => {
     );
 
     expect(recentMarkup).toContain("还没有训练记录。");
-    expect(backlogMarkup).toContain("当前没有 C/D Backlog");
+    expect(backlogMarkup).toContain("当前没有 C/D 待加强题目");
     expect(backlogMarkup).toContain("所有题目都已进入 A/B 掌握池，保持节奏即可。");
   });
 

@@ -20,7 +20,7 @@ export function RecentSolvedList({ problems }: { problems: readonly ProblemFile[
             <StatusBadge status={frontmatter.status} />
           </div>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-5 text-slate-500">
-            <span>{frontmatter.platform}{frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}</span>
+            <span>{frontmatter.platform}{frontmatter.rating != null ? ` · 难度 ${frontmatter.rating}` : ""}</span>
             <time className="font-mono" dateTime={frontmatter.solvedAt}>{frontmatter.solvedAt}</time>
             {frontmatter.knowledge.slice(0, 2).map((id) => <span className="text-slate-600" key={id}>{getKnowledgeLabel(id)}</span>)}
           </div>

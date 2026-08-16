@@ -123,7 +123,7 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
       <section aria-labelledby="identity-heading">
         <div className="border-b border-slate-200 pb-3">
           <h2 className="text-lg font-semibold text-slate-950" id="identity-heading">题目标识</h2>
-          <p className="mt-1 text-sm text-slate-600">标题和平台为必填；Contest 与题号会用于生成建议 ID。</p>
+          <p className="mt-1 text-sm text-slate-600">标题和平台为必填；比赛与题号会用于生成建议 ID。</p>
         </div>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-semibold text-slate-800 sm:col-span-2">
@@ -158,7 +158,7 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
           </label>
 
           <label className="block text-sm font-semibold text-slate-800">
-            Contest
+            比赛
             <input className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200" name="contest" onChange={(event) => updateIdentity("contest", event.target.value)} value={identity.contest} />
           </label>
 
@@ -229,7 +229,7 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
             <FieldError errors={fieldErrors.status} />
           </label>
           <label className="block text-sm font-semibold text-slate-800">
-            Rating
+            难度
             <input className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200" defaultValue={initial.rating ?? ""} min="1" name="rating" step="1" type="number" />
             <FieldError errors={fieldErrors.rating} />
           </label>
@@ -247,12 +247,12 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
           <p className="mt-1 text-sm text-slate-600">按层级选择解题所需的最小充分知识点；标签用逗号或换行分隔。</p>
         </div>
         <fieldset className="mt-5">
-          <legend className="text-sm font-semibold text-slate-800">Knowledge</legend>
+          <legend className="text-sm font-semibold text-slate-800">知识点</legend>
           <div className="mt-3"><KnowledgeSelector initial={initial.knowledge} /></div>
           <FieldError errors={fieldErrors.knowledge} />
         </fieldset>
         <label className="mt-5 block text-sm font-semibold text-slate-800">
-          Tags
+          标签
           <textarea className="mt-2 block min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200" defaultValue={initial.tags.join(", ")} name="tags" placeholder="例如：状压 DP, 子集枚举, XOR" />
           <FieldError errors={fieldErrors.tags} />
         </label>
@@ -260,16 +260,16 @@ export function ProblemEditorForm({ initial, mode }: ProblemEditorFormProps) {
 
       <section aria-labelledby="schedule-heading">
         <div className="border-b border-slate-200 pb-3">
-          <h2 className="text-lg font-semibold text-slate-950" id="schedule-heading">Review 排期</h2>
-          <p className="mt-1 text-sm text-slate-600">这里只调整当前排期，不会生成虚假的 Review History。</p>
+          <h2 className="text-lg font-semibold text-slate-950" id="schedule-heading">复习排期</h2>
+          <p className="mt-1 text-sm text-slate-600">这里只调整当前排期，不会生成虚假的复习记录。</p>
         </div>
         <label className="mt-5 flex items-start gap-3 border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
           <input checked={scheduleReview} className="mt-0.5 size-4 accent-sky-700" name="scheduleReview" onChange={(event) => setScheduleReview(event.target.checked)} type="checkbox" />
-          <span><span className="block font-semibold text-slate-900">安排下一次 Review</span>日期和间隔必须同时填写。</span>
+          <span><span className="block font-semibold text-slate-900">安排下一次复习</span>日期和间隔必须同时填写。</span>
         </label>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-semibold text-slate-800">
-            下次 Review 日期
+            下次复习日期
             <input className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm disabled:bg-slate-100 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200" defaultValue={initial.nextReviewDate ?? ""} disabled={!scheduleReview} name="nextReviewDate" required={scheduleReview} type="date" />
             <FieldError errors={fieldErrors.nextReviewDate} />
           </label>

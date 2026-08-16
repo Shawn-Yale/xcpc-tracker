@@ -24,9 +24,8 @@ export function ActivityHeatmap({ days }: { days: readonly HeatmapDay[] }) {
     <section aria-labelledby="heatmap-title">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Consistency</p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950" id="heatmap-title">12 周训练热力图</h2>
-          <p className="mt-2 text-sm text-slate-600">每格合计首次训练与 Review 次数，不代表不同题目数。</p>
+          <h2 className="text-xl font-semibold text-slate-950" id="heatmap-title">12 周训练热力图</h2>
+          <p className="mt-2 text-sm text-slate-600">每格合计首次训练与复习次数，不代表不同题目数。</p>
         </div>
         <p className="text-sm text-slate-600"><span className="font-mono font-semibold text-slate-950">{totalActivity}</span> 次活动 · <span className="font-mono font-semibold text-slate-950">{activeDays}</span> 个活跃日</p>
       </div>
@@ -46,10 +45,10 @@ export function ActivityHeatmap({ days }: { days: readonly HeatmapDay[] }) {
               className={`size-3.5 rounded-[3px] ring-1 ring-inset sm:size-4 ${intensityStyles[intensity(day.total)]}`}
               dateTime={day.date}
               key={day.date}
-              title={`${day.date} · Solved ${day.solvedCount} · Reviews ${day.reviewCount}`}
+              title={`${day.date} · 首次训练 ${day.solvedCount} · 复习 ${day.reviewCount}`}
             >
               <span className="sr-only">
-                {day.date}：{day.solvedCount} 道首次训练，{day.reviewCount} 次 Review
+                {day.date}：{day.solvedCount} 道首次训练，{day.reviewCount} 次复习
               </span>
             </time>
           ))}

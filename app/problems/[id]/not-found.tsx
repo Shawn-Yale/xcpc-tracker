@@ -3,10 +3,7 @@ import Link from "next/link";
 export default function ProblemNotFound() {
   return (
     <div className="mx-auto max-w-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-      <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-        Problem not found
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold text-slate-950">找不到这道题</h1>
+      <h1 className="text-2xl font-semibold text-slate-950">找不到这道题</h1>
       <p className="mt-3 text-sm leading-6 text-slate-600">
         对应 ID 不存在，或者题目文件已经被移动。
       </p>

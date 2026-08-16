@@ -75,19 +75,19 @@ describe("Dashboard hero presentation", () => {
     }));
 
     expect(markup).toMatch(
-      /<dt[^>]*>Today<\/dt><dd[^>]*>[\s\S]*?<span[^>]*>2<\/span>[\s\S]*?待复习<\/span><\/dd>/,
+      /<dt[^>]*>今天<\/dt><dd[^>]*>[\s\S]*?<span[^>]*>2<\/span>[\s\S]*?待复习<\/span><\/dd>/,
     );
     expect(markup).toMatch(
-      /<dt[^>]*>overdue<\/dt><dd[^>]*>1<\/dd>/,
+      /<dt[^>]*>已逾期<\/dt><dd[^>]*>1<\/dd>/,
     );
     expect(markup).toMatch(
-      /<dt[^>]*>next 7 days<\/dt><dd[^>]*>3<\/dd>/,
+      /<dt[^>]*>未来 7 天<\/dt><dd[^>]*>3<\/dd>/,
     );
     expect(markup).toContain('aria-label="今日行动摘要"');
     expect(markup).not.toContain('aria-label="Today Review');
     expect(markup).not.toContain('aria-label="Overdue');
     expect(markup).not.toContain('aria-label="Next 7 Days');
-    expect(markup).not.toContain("Mastery Rate");
+    expect(markup).not.toContain("掌握率");
     expect(markup).not.toContain("已掌握");
   });
 
@@ -147,7 +147,7 @@ describe("Dashboard daily focus presentation", () => {
       today: [problem("today-task", "2026-08-14")],
     }));
 
-    expect(markup).toContain("Overdue 0");
+    expect(markup).toContain("已逾期 0");
     expect(markup).toContain("当前没有逾期任务");
     expect(markup).not.toContain('id="overdue-focus-title"');
     expect(markup).not.toContain("没有逾期任务，节奏保持得很好。");
@@ -162,10 +162,10 @@ describe("Dashboard daily focus presentation", () => {
   it("keeps both empty states lightweight and clear", () => {
     const markup = renderDailyFocus(queue());
 
-    expect(markup).toContain("Overdue 0");
+    expect(markup).toContain("已逾期 0");
     expect(markup).toContain("当前没有逾期任务");
-    expect(markup).toContain("Today");
-    expect(markup).toContain("今天没有到期 Review。");
+    expect(markup).toContain("今天");
+    expect(markup).toContain("今天没有到期复习。");
     expect(markup).not.toContain('id="overdue-focus-title"');
     expect(markup).not.toContain("xl:grid-cols-2");
   });

@@ -52,7 +52,7 @@ export function PrimaryNavigation() {
 
   return (
     <nav
-      aria-label="Primary navigation"
+      aria-label="主导航"
       className="overflow-x-auto pb-1"
       ref={navigationRef}
     >

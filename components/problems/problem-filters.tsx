@@ -112,10 +112,10 @@ export function ProblemFilters({ query }: { query: ProblemQuery }) {
 
         <label>
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-            Review
+            复习
           </span>
           <select className={fieldClassName} defaultValue={query.review} name="review">
-            <option value="all">全部 Review</option>
+            <option value="all">全部复习</option>
             <option value="due">已到期</option>
             <option value="overdue">已逾期</option>
             <option value="scheduled">未来已安排</option>
@@ -129,8 +129,8 @@ export function ProblemFilters({ query }: { query: ProblemQuery }) {
           </span>
           <select className={fieldClassName} defaultValue={query.sort} name="sort">
             <option value="solvedAt">首次训练日期</option>
-            <option value="rating">Rating</option>
-            <option value="nextReviewDate">下次 Review</option>
+            <option value="rating">难度</option>
+            <option value="nextReviewDate">下次复习</option>
           </select>
         </label>
 

@@ -27,7 +27,7 @@ function parseStatus(value: string): Status | undefined {
 export async function generateMetadata({ params }: StatusPoolPageProps): Promise<Metadata> {
   const { status: value } = await params;
   const status = parseStatus(value);
-  return { title: status ? `Status ${status}` : "Status not found" };
+  return { title: status ? `状态 ${status}` : "找不到状态" };
 }
 
 export default async function StatusPoolPage({ params }: StatusPoolPageProps) {
@@ -65,12 +65,9 @@ export default async function StatusPoolPage({ params }: StatusPoolPageProps) {
       <header>
         <div className="flex items-center gap-3">
           <StatusBadge status={status} />
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-            Status pool
-          </p>
         </div>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-          Status {status}
+          状态 {status}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
           {statusMetadata[status].meaning}
@@ -81,10 +78,10 @@ export default async function StatusPoolPage({ params }: StatusPoolPageProps) {
       <StatsStrip stats={stats} />
 
       {status === "C" ? (
-        <section className="grid gap-3 sm:grid-cols-2" aria-label="C 状态 Review 提示">
+        <section className="grid gap-3 sm:grid-cols-2" aria-label="C 状态复习提示">
           <div className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
-              未安排 Review
+              未安排复习
             </p>
             <p className="mt-1 font-mono text-2xl font-semibold text-amber-950">
               {unscheduledCount}

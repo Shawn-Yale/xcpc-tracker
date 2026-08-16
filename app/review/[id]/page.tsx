@@ -8,7 +8,7 @@ import { ReviewCompletionForm } from "@/components/review/review-completion-form
 import { toLocalDateOnly } from "@/lib/date/local-date";
 import { createProblemRepository } from "@/lib/problems/repository";
 
-export const metadata: Metadata = { title: "Complete Review" };
+export const metadata: Metadata = { title: "完成复习" };
 export const dynamic = "force-dynamic";
 
 type CompleteReviewPageProps = {
@@ -29,14 +29,11 @@ export default async function CompleteReviewPage({ params }: CompleteReviewPageP
   return (
     <div className="mx-auto max-w-4xl">
       <Link className="text-sm font-medium text-slate-600 hover:text-sky-800 hover:underline" href="/review">
-        ← 返回 Review 队列
+        ← 返回复习队列
       </Link>
 
       <header className="mt-6 border-b border-slate-200 pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-          Complete review
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           {frontmatter.title}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">

@@ -20,7 +20,7 @@ type KnowledgeNodePageProps = { params: Promise<{ segments: string[] }> };
 
 export async function generateMetadata({ params }: KnowledgeNodePageProps): Promise<Metadata> {
   const entry = resolveKnowledgePath(knowledgeCatalog, (await params).segments);
-  return { title: entry?.name ?? "Knowledge node not found" };
+  return { title: entry?.name ?? "找不到知识点" };
 }
 
 export default async function KnowledgeNodePage({ params }: KnowledgeNodePageProps) {
@@ -46,13 +46,12 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Knowledge breadcrumb" className="flex flex-wrap gap-2 text-sm text-slate-600">
-        <Link className="hover:text-sky-800 hover:underline" href="/knowledge">Knowledge</Link>
+      <nav aria-label="知识点层级" className="flex flex-wrap gap-2 text-sm text-slate-600">
+        <Link className="hover:text-sky-800 hover:underline" href="/knowledge">知识</Link>
         {breadcrumbEntries.map((item) => <span key={item.id}>/ <Link className="hover:text-sky-800 hover:underline" href={getKnowledgeHref(item.id)}>{item.name}</Link></span>)}
       </nav>
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Knowledge node</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{entry.name}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{entry.name}</h1>
         {entry.description ? <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">{entry.description}</p> : null}
       </header>
       <LoadErrorSummary errors={errors} />
@@ -84,7 +83,7 @@ export default async function KnowledgeNodePage({ params }: KnowledgeNodePagePro
       ) : null}
       <section aria-labelledby="knowledge-problems-title">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-          <div><h2 className="text-xl font-semibold text-slate-950" id="knowledge-problems-title">Problems</h2><p className="mt-1 text-sm text-slate-500">{isParent ? "当前知识点及其下级知识点" : "当前知识点"}，共 {visibleProblems.length} 题</p></div>
+          <div><h2 className="text-xl font-semibold text-slate-950" id="knowledge-problems-title">题目</h2><p className="mt-1 text-sm text-slate-500">{isParent ? "当前知识点及其下级知识点" : "当前知识点"}，共 {visibleProblems.length} 题</p></div>
           <Link className="text-sm font-semibold text-sky-800 hover:underline" href={`/problems?knowledge=${encodeURIComponent(entry.id)}`}>在题目库中筛选</Link>
         </div>
         {visibleProblems.length > 0 ? <div className="mt-5 overflow-hidden border border-slate-200"><ProblemList problems={visibleProblems} today={today} /></div> : <p className="mt-5 border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-600">这个知识范围暂无题目。</p>}

@@ -17,13 +17,13 @@ export function AppShell({ children }: AppShellProps) {
         跳到主要内容
       </a>
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-4">
           <Link className="w-fit" href="/">
             <span className="block text-lg font-semibold tracking-tight">
               XCPC Tracker
             </span>
             <span className="block text-xs text-slate-500">
-              Practice with intention
+              有目标地训练
             </span>
           </Link>
 

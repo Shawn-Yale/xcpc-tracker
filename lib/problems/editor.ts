@@ -97,7 +97,7 @@ export const problemEditorSchema = z
       if (input.nextReviewDate == null) {
         context.addIssue({
           code: "custom",
-          message: "安排 Review 时必须填写下次日期",
+          message: "安排复习时必须填写下次日期",
           path: ["nextReviewDate"],
         });
       }
@@ -105,7 +105,7 @@ export const problemEditorSchema = z
       if (input.reviewIntervalDays == null) {
         context.addIssue({
           code: "custom",
-          message: "安排 Review 时必须填写间隔天数",
+          message: "安排复习时必须填写间隔天数",
           path: ["reviewIntervalDays"],
         });
       }

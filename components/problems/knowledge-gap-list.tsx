@@ -79,7 +79,7 @@ export function KnowledgeGapList({
 
               <div className="shrink-0 border-l-2 border-rose-200 pl-4 font-mono text-xs lg:w-36">
                 <p className="mb-1 font-sans text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Next Review
+                  下次复习
                 </p>
                 <ReviewDate
                   date={problem.frontmatter.nextReviewDate}
