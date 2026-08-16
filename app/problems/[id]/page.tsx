@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { KnowledgeReveal } from "@/components/knowledge/knowledge-reveal";
 import { MarkdownContent } from "@/components/problems/markdown-content";
 import { ReviewDate } from "@/components/problems/review-date";
 import { SolutionCodeBlock } from "@/components/problems/solution-code-block";
@@ -88,17 +89,19 @@ function KnowledgeDetailTags({ ids }: { ids: readonly KnowledgeId[] }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {ids.map((id) => (
-        <span
-          className="rounded-md bg-slate-100 px-2.5 py-1 text-sm text-slate-700 ring-1 ring-inset ring-slate-200"
-          key={id}
-          title={getKnowledgeBreadcrumb(id)}
-        >
-          {getKnowledgeLabel(id)}
-        </span>
-      ))}
-    </div>
+    <KnowledgeReveal variant="badges">
+      <span className="flex flex-wrap gap-2">
+        {ids.map((id) => (
+          <span
+            className="rounded-md bg-white px-2.5 py-1 text-sm text-slate-700 ring-1 ring-inset ring-slate-200"
+            key={id}
+            title={getKnowledgeBreadcrumb(id)}
+          >
+            {getKnowledgeLabel(id)}
+          </span>
+        ))}
+      </span>
+    </KnowledgeReveal>
   );
 }
 

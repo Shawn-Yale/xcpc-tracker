@@ -89,7 +89,7 @@ export function DailyFocus({ reviewQueue, today }: DailyFocusProps) {
               <h3 className="font-semibold text-rose-800" id="overdue-focus-title">Overdue</h3>
               <span className="font-mono text-xs text-slate-500">{reviewQueue.overdue.length}</span>
             </div>
-            <ReviewTaskList problems={reviewQueue.overdue.slice(0, 3)} emptyMessage="没有逾期任务，节奏保持得很好。" today={today} />
+            <ReviewTaskList problems={reviewQueue.overdue.slice(0, 3)} emptyMessage="没有逾期任务，节奏保持得很好。" protectKnowledge today={today} />
           </section>
         ) : null}
 

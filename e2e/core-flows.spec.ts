@@ -289,12 +289,20 @@ test("problem browsing, filtering, and Markdown detail are usable", async (
   const knowledgeSection = page.locator(
     'section[aria-labelledby="knowledge-title"]',
   );
+  const detailKnowledgeReveal = knowledgeSection.locator("button[aria-expanded]");
+  await expect(detailKnowledgeReveal).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    knowledgeSection.getByTitle("图论 / 最短路 / Dijkstra"),
+  ).toHaveCount(0);
+  await detailKnowledgeReveal.click();
   await expect(
     knowledgeSection.getByTitle("图论 / 最短路 / Dijkstra"),
   ).toHaveText("Dijkstra");
   await expect(
     knowledgeSection.getByText("图论 / 最短路 / Dijkstra", { exact: true }),
   ).toHaveCount(0);
+  await detailKnowledgeReveal.click();
+  await expect(detailKnowledgeReveal).toHaveAttribute("aria-expanded", "false");
   await page.getByRole("link", { name: "编辑题目" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "编辑题目" })).toBeVisible();
   await expect(page.getByLabel("稳定 ID *")).toHaveValue("e2e-dijkstra");
@@ -672,6 +680,114 @@ test("Review form updates its interval suggestion", async ({ page }) => {
   await page.goto("/review/e2e-dijkstra");
   await page.getByLabel("新状态").selectOption("D");
   await expect(page.getByLabel("下次间隔（天）")).toHaveValue("3");
+});
+
+test("review contexts protect Knowledge until a temporary reveal", async ({
+  page,
+}, testInfo) => {
+  const expectNoPageOverflow = async () => {
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+  };
+
+  await page.goto("/review");
+  const overdueSection = page.locator('section[aria-labelledby="overdue-title"]');
+  const reviewTask = overdueSection.locator("li").filter({
+    hasText: "Dijkstra E2E Fixture",
+  });
+  const reviewKnowledge = reviewTask.locator("button[aria-expanded]");
+  const reviewTaskHeight = (await reviewTask.boundingBox())?.height;
+
+  await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+  await expect(reviewKnowledge).toContainText("知识点已隐藏");
+  await expect(reviewKnowledge.getByText("Dijkstra", { exact: true })).toHaveCount(0);
+  await expect(reviewTask.getByRole("link", { name: "完成 Review" })).toBeVisible();
+
+  if (testInfo.project.name === "desktop-chrome") {
+    await reviewKnowledge.hover();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await expect(reviewKnowledge.getByText("Dijkstra", { exact: true })).toBeVisible();
+    await page.getByRole("heading", { level: 1, name: "Review 队列" }).hover();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+
+    await reviewKnowledge.click();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await page.getByRole("heading", { level: 1, name: "Review 队列" }).hover();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+
+    await reviewKnowledge.click();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await reviewKnowledge.click();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+
+    await reviewKnowledge.focus();
+    await reviewKnowledge.press("Enter");
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await reviewKnowledge.press("Enter");
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+    await reviewKnowledge.press("Space");
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await reviewKnowledge.press("Space");
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+  } else {
+    await reviewKnowledge.click();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "true");
+    await expect(reviewKnowledge.getByText("Dijkstra", { exact: true })).toBeVisible();
+    await reviewKnowledge.click();
+    await expect(reviewKnowledge).toHaveAttribute("aria-expanded", "false");
+  }
+
+  if (reviewTaskHeight != null) {
+    expect(Math.abs((await reviewTask.boundingBox())!.height - reviewTaskHeight)).toBeLessThanOrEqual(2);
+  }
+  await expectNoPageOverflow();
+
+  await page.goto("/");
+  const dashboardOverdue = page.locator(
+    'section[aria-labelledby="overdue-focus-title"]',
+  );
+  const dashboardTask = dashboardOverdue.locator("li").filter({
+    hasText: "Boredom E2E Fixture",
+  });
+  const dashboardKnowledge = dashboardTask.locator("button[aria-expanded]");
+  const dashboardTaskHeight = (await dashboardTask.boundingBox())?.height;
+
+  await expect(dashboardKnowledge).toHaveAttribute("aria-expanded", "false");
+  await expect(dashboardKnowledge.getByText("线性 DP", { exact: true })).toHaveCount(0);
+  await dashboardKnowledge.click();
+  await expect(dashboardKnowledge.getByText("线性 DP", { exact: true })).toBeVisible();
+  await expect(dashboardTask.getByRole("link", { name: "完成 Review" })).toBeVisible();
+  await dashboardKnowledge.click();
+  await expect(dashboardKnowledge).toHaveAttribute("aria-expanded", "false");
+  if (dashboardTaskHeight != null) {
+    expect(Math.abs((await dashboardTask.boundingBox())!.height - dashboardTaskHeight)).toBeLessThanOrEqual(2);
+  }
+  await expectNoPageOverflow();
+
+  await page.goto("/problems/e2e-dijkstra");
+  const detailKnowledge = page.locator(
+    'section[aria-labelledby="knowledge-title"]',
+  );
+  const detailKnowledgeButton = detailKnowledge.locator("button[aria-expanded]");
+  const detailHeight = (await detailKnowledge.boundingBox())?.height;
+
+  await expect(detailKnowledgeButton).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    detailKnowledge.getByTitle("图论 / 最短路 / Dijkstra"),
+  ).toHaveCount(0);
+  await detailKnowledgeButton.click();
+  await expect(
+    detailKnowledge.getByTitle("图论 / 最短路 / Dijkstra"),
+  ).toHaveText("Dijkstra");
+  await detailKnowledgeButton.click();
+  await expect(detailKnowledgeButton).toHaveAttribute("aria-expanded", "false");
+  if (detailHeight != null) {
+    expect(Math.abs((await detailKnowledge.boundingBox())!.height - detailHeight)).toBeLessThanOrEqual(2);
+  }
+  await expectNoPageOverflow();
 });
 
 test("core pages have no serious automated accessibility violations", async ({ page }) => {

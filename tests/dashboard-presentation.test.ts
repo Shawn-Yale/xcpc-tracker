@@ -11,7 +11,11 @@ import type { ReviewQueue } from "@/lib/review/queue";
 
 const today = dateOnlySchema.parse("2026-08-14");
 
-function problem(id: string, nextReviewDate: string): ProblemFile {
+function problem(
+  id: string,
+  nextReviewDate: string,
+  knowledge: readonly string[] = [],
+): ProblemFile {
   return {
     fileName: `${id}.md`,
     content: "",
@@ -21,7 +25,7 @@ function problem(id: string, nextReviewDate: string): ProblemFile {
       platform: "Codeforces",
       solvedAt: "2026-08-01",
       status: "C",
-      knowledge: [],
+      knowledge,
       tags: [],
       nextReviewDate,
       reviewIntervalDays: 7,
@@ -106,6 +110,25 @@ describe("Dashboard hero presentation", () => {
 });
 
 describe("Dashboard daily focus presentation", () => {
+  it("protects Knowledge only in Overdue tasks", () => {
+    const markup = renderDailyFocus(queue({
+      overdue: [problem(
+        "overdue-task",
+        "2026-08-13",
+        ["data-structure.range-query.fenwick-tree"],
+      )],
+      today: [problem(
+        "today-task",
+        "2026-08-14",
+        ["graph.shortest-path.dijkstra"],
+      )],
+    }));
+
+    expect(markup).toContain("知识点已隐藏");
+    expect(markup).not.toContain("树状数组");
+    expect(markup).toContain("Dijkstra");
+  });
+
   it("renders separate Overdue and Today columns when overdue work exists", () => {
     const markup = renderDailyFocus(queue({
       overdue: [problem("overdue-task", "2026-08-13")],

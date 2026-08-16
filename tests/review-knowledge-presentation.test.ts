@@ -26,10 +26,14 @@ function reviewProblem(knowledge: readonly string[]): ProblemFile {
   };
 }
 
-function renderReviewTaskList(knowledge: readonly string[]): string {
+function renderReviewTaskList(
+  knowledge: readonly string[],
+  protectKnowledge = false,
+): string {
   return renderToStaticMarkup(
     createElement(ReviewTaskList, {
       emptyMessage: "No review tasks.",
+      protectKnowledge,
       problems: [reviewProblem(knowledge)],
       today: dateOnlySchema.parse("2026-08-13"),
     }),
@@ -37,6 +41,20 @@ function renderReviewTaskList(knowledge: readonly string[]): string {
 }
 
 describe("review knowledge presentation", () => {
+  it("protects selected Knowledge without removing platform metadata or actions", () => {
+    const markup = renderReviewTaskList([
+      "data-structure.range-query.segment-tree",
+      "data-structure.range-query.fenwick-tree",
+    ], true);
+
+    expect(markup).toContain("Codeforces");
+    expect(markup).toContain("知识点已隐藏");
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).not.toContain("线段树");
+    expect(markup).not.toContain("树状数组");
+    expect(markup).toContain('href="/review/review-knowledge-labels"');
+  });
+
   it("shows selected Knowledge names in selection order without breadcrumbs", () => {
     const markup = renderReviewTaskList([
       "data-structure.range-query.segment-tree",

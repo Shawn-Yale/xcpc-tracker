@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { KnowledgeReveal } from "@/components/knowledge/knowledge-reveal";
 import { ReviewDate } from "@/components/problems/review-date";
 import { StatusBadge } from "@/components/problems/status-badge";
 import type { DateOnly } from "@/lib/date/date-only";
@@ -8,11 +9,17 @@ import type { ProblemFile } from "@/lib/problems/types";
 
 type ReviewTaskListProps = {
   emptyMessage: string;
+  protectKnowledge?: boolean;
   problems: readonly ProblemFile[];
   today: DateOnly;
 };
 
-export function ReviewTaskList({ emptyMessage, problems, today }: ReviewTaskListProps) {
+export function ReviewTaskList({
+  emptyMessage,
+  protectKnowledge = false,
+  problems,
+  today,
+}: ReviewTaskListProps) {
   if (problems.length === 0) {
     return (
       <p className="border-l-4 border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
@@ -38,13 +45,26 @@ export function ReviewTaskList({ emptyMessage, problems, today }: ReviewTaskList
                   {frontmatter.title}
                 </Link>
               </div>
-              <p className="mt-2 truncate text-xs text-slate-500">
-                {frontmatter.platform}
-                {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
-                {frontmatter.knowledge.length > 0
-                  ? ` · ${frontmatter.knowledge.map(getKnowledgeLabel).join(" · ")}`
-                  : ""}
-              </p>
+              {protectKnowledge && frontmatter.knowledge.length > 0 ? (
+                <div className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-slate-500">
+                  <span>
+                    {frontmatter.platform}
+                    {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
+                  </span>
+                  <span aria-hidden="true"> · </span>
+                  <KnowledgeReveal>
+                    {frontmatter.knowledge.map(getKnowledgeLabel).join(" · ")}
+                  </KnowledgeReveal>
+                </div>
+              ) : (
+                <p className="mt-2 truncate text-xs text-slate-500">
+                  {frontmatter.platform}
+                  {frontmatter.rating != null ? ` · Rating ${frontmatter.rating}` : ""}
+                  {frontmatter.knowledge.length > 0
+                    ? ` · ${frontmatter.knowledge.map(getKnowledgeLabel).join(" · ")}`
+                    : ""}
+                </p>
+              )}
             </div>
 
             <div className="font-mono text-xs tabular-nums">

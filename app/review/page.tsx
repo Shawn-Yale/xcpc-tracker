@@ -66,7 +66,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <h2 className="text-xl font-semibold text-rose-800" id="overdue-title">Overdue</h2>
           <span className="font-mono text-sm text-slate-500">{queue.overdue.length}</span>
         </div>
-        <ReviewTaskList emptyMessage="没有逾期任务。" problems={queue.overdue} today={today} />
+        <ReviewTaskList emptyMessage="没有逾期任务。" problems={queue.overdue} protectKnowledge today={today} />
       </section>
 
       <section aria-labelledby="today-title">
@@ -74,7 +74,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <h2 className="text-xl font-semibold text-slate-950" id="today-title">Today</h2>
           <span className="font-mono text-sm text-slate-500">{queue.today.length}</span>
         </div>
-        <ReviewTaskList emptyMessage="今天没有计划中的 Review。" problems={queue.today} today={today} />
+        <ReviewTaskList emptyMessage="今天没有计划中的 Review。" problems={queue.today} protectKnowledge today={today} />
       </section>
 
       <section aria-labelledby="upcoming-title">
@@ -82,7 +82,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           <h2 className="text-xl font-semibold text-slate-950" id="upcoming-title">Upcoming · 未来 7 天</h2>
           <span className="font-mono text-sm text-slate-500">{queue.upcoming.length}</span>
         </div>
-        <ReviewTaskList emptyMessage="未来 7 天没有已安排的 Review。" problems={queue.upcoming} today={today} />
+        <ReviewTaskList emptyMessage="未来 7 天没有已安排的 Review。" problems={queue.upcoming} protectKnowledge today={today} />
       </section>
     </div>
   );
